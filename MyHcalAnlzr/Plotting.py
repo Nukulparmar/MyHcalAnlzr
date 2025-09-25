@@ -168,6 +168,7 @@ def MakeChargeExtrapolation(gr, trend):
 ROOT.gStyle.SetOptFit(1)
 ROOT.gStyle.SetOptStat(0)
 ROOT.gROOT.SetBatch(True)
+
 if len(sys.argv)>1:
   inputfile = sys.argv[1]
 else:
@@ -183,8 +184,16 @@ output = inputfile.split(".")[0]+"_"+dowhat+"/"
 if not os.path.isdir(output): os.mkdir(output)
 fin=ROOT.TFile.Open(inputfile, "READ")
 
+# # DEBUG: Print all available histograms in the file
+# print("=== Available histograms in ROOT file ===")
+# for key in fin.GetListOfKeys():
+#     obj_name = key.GetName()
+#     obj_type = key.GetClassName()
+#     print(f"  {obj_name} ({obj_type})")
+# print("=== End of available histograms ===")
+
 if dowhat == "daysince":
-  xtitle = "Days since 19th March 2024"
+  xtitle = "Days since 22th April 2024"
 elif dowhat == "lumi":
   xtitle = "Luminosity [fb^{-1}]"
 
@@ -236,16 +245,22 @@ for title in grdict:
     subdet = grdict[title][1]
     parts = [trend for trend in trends if trend.startswith(subdet) and trend.endswith(unit) and "depth" not in trend]
     # Manually sort:
-    if parts == ['HB_sipmLarge_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit]:
-      print("Sorting this")
-      parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit,  'HB_sipmLarge_HBP14RM1_'+unit,'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit,] # , 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmSmall_phi,18,19_'+unit
+    #if parts == ['HB_sipmLarge_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit]:
+      #print("Sorting this")
+      #parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit,  'HB_sipmLarge_HBP14RM1_'+unit,'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit,] # , 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmSmall_phi,18,19_'+unit
     #if parts == ['HE_sipmLarge_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmSmall_phi,18,19_'+unit, 'HE_sipmSmall_phi,36,37_'+unit]:
      # parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_phi,36,37_'+unit] # , 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmSmall_phi,18,19_'+unit
     thismin, thismax = MinMaxAxis((limits[trend+meanrms][0] for trend in parts), (limits[trend+meanrms][1] for trend in parts), 0.5)
-    if subdet=="HB": color = ROOT.kBlue
-    elif subdet=="HE": color = ROOT.kGreen
+    if subdet=="HB":
+        parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit,  'HB_sipmLarge_HBP14RM1_'+unit,'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit, 'HB_sipmLarge_HBM12RM3_'+unit, 'HB_sipmSmall_HBM12RM3_'+unit]
+        color = ROOT.kBlue
+    elif subdet=="HE":
+        parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit]
+        color = ROOT.kGreen
     elif subdet=="HF": color = ROOT.kRed
-    elif subdet=="HO": color = ROOT.kBlack
+    elif subdet=="HO":
+        parts = ['HO_'+unit, 'HO_HO0_'+unit, 'HO_HO1_'+unit, 'HO_HO2_'+unit]
+        color = ROOT.kBlack
     lowedge = 999
     upedge = 0
     for j,part in enumerate(parts):
@@ -277,10 +292,27 @@ for title in grdict:
         tcolor = color+4
         marker = 35
         line = 9
+      elif "HBM12RM3" in part:
+        tcolor = color+4
+        marker = 36
+        line = 10
+      elif "HO0" in part:
+        tcolor = color+6
+        marker = 22
+        line = 4
+      elif "HO1" in part:
+        tcolor = color+2
+        marker = 23
+        line = 5
+      elif "HO2" in part:
+        tcolor = color+8
+        marker = 24
+        line = 6
       else:
         tcolor = color
         marker = 21
         line = 1
+
       gr[part][meanrms].SetLineColor(tcolor)
       gr[part][meanrms].SetLineStyle(line)
       gr[part][meanrms].SetMarkerStyle(marker)
@@ -315,13 +347,18 @@ for title in grdict:
         elif "HBP14RM1" in part: sizename += ", HBP14 RM1" 
         elif "HBM09RM3" in part: sizename += ", HBM09 RM3" 
         elif "HBM04RM3" in part: sizename += ", HBM04 RM3"
+        elif "HBM12RM3" in part: sizename += ", HBM12 RM3"
+      if subdet=="HO":
+        if "HO0" in part: sizename = "0"
+        elif "HO1" in part: sizename = "1"
+        elif "HO2" in part: sizename = "2"
       label = subdet + " " + sizename + ""
       legend[-1].AddEntry(gr[part][meanrms], label, "pl")
     # Vertical lines at 1st of every month
     if dowhat=="daysince":
       monthlines = []
       for linehere in [31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]:
-        linehere = linehere - 77 # Start counting from 6th April instead of 1st January
+        linehere = linehere - 112 # Start counting from 22nd April instead of 1st January
         if lowedge > linehere or upedge < linehere: continue
         monthlines.append(ROOT.TLine(linehere, thismin - (thismax-thismin)*0.2, linehere, thismax + (thismax-thismin)*0.3))
         monthlines[-1].SetLineStyle(3)
@@ -331,237 +368,238 @@ for title in grdict:
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".png")
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".pdf")
 
-
+# if fin:
 ##### Prepare runs for histograms
-if runstoplot!=[]:
-  runs = runstoplot
-else:
-  allruns = []
-  for name in fin.GetListOfKeys():
-    name = name.GetName()
-    if "run" in name:
-      run = name.split("run")[1]
-      if run not in allruns:
-        allruns.append(run)
-  allruns.sort()
-  ## Select only 4 runs: First, middle, last
-  if False:
-    runs = [allruns[0]]
-    if len(allruns)>3:
-      runs.append(allruns[int(len(allruns)/3)])
-      runs.append(allruns[int(len(allruns)/3*2)])
-    elif len(allruns)>2:
-      runs.append(allruns[int(len(allruns)/2)])
-    if len(allruns)>1: runs.append(allruns[-1])
-  ## Or do all runs
-  elif False:
-    runs = allruns
-  ## Or do most recent ones:
-  elif True:
-    step = 1
-    runs = [allruns[-1]]
-    runs.append(allruns[-1-step])
-    runs.append(allruns[-1-2*step])
-    runs.append(allruns[-1-3*step])
+  if runstoplot!=[]:
+    runs = runstoplot
+  else:
+    allruns = []
+    for name in fin.GetListOfKeys():
+      name = name.GetName()
+      if "run" in name:
+        run = name.split("run")[1]
+        if run not in allruns:
+          allruns.append(run)
+    allruns.sort()
+    ## Select only 4 runs: First, middle, last
+    if False:
+      runs = [allruns[0]]
+      if len(allruns)>3:
+        runs.append(allruns[int(len(allruns)/3)])
+        runs.append(allruns[int(len(allruns)/3*2)])
+      elif len(allruns)>2:
+        runs.append(allruns[int(len(allruns)/2)])
+      if len(allruns)>1: runs.append(allruns[-1])
+    ## Or do all runs
+    elif False:
+      runs = allruns
+    ## Or do most recent ones:
+    elif True:
+      step = 1
+      runs = [allruns[-1]]
+      runs.append(allruns[-1-step])
+      runs.append(allruns[-1-2*step])
+      runs.append(allruns[-1-3*step])
 
 
 ##### Collect histogram data
-h = {}
-hdepth = {}
-hphi = {}
-maxlimit = {}
-sizes = ["Small", "Large"]
-for unit in ["ADC", "FC"]:
- for subdet in ["HB", "HE"]:
-  h[unit+subdet] = {}
-  hdepth[unit+subdet] = {}
-  hphi[unit+subdet] = {}
+  h = {}
+  hdepth = {}
+  hphi = {}
+  maxlimit = {}
+  sizes = ["Small", "Large"]
+  for unit in ["ADC", "FC"]:
+    for subdet in ["HB", "HE"]:
+      h[unit+subdet] = {}
+      hdepth[unit+subdet] = {}
+      hphi[unit+subdet] = {}
 
-  for size in sizes:
-    h[unit+subdet][size] = {}
-    for alpha in ["Mean", "RMS"]:
-      if alpha+subdet+unit not in maxlimit: maxlimit[alpha+subdet+unit] = [0, 999, 0] # Highest y-axis value, Smallest bin with entry, Highest bin with entry
-      h[unit+subdet][size][alpha] = {}
-      for run in runs:
-        h[unit+subdet][size][alpha][run] = fin.Get(subdet+"_sipm"+size+"_ped"+unit+alpha+"_run"+run)
-        maxval = h[unit+subdet][size][alpha][run].GetMaximum()
-        leftbin = h[unit+subdet][size][alpha][run].GetBinCenter(h[unit+subdet][size][alpha][run].FindFirstBinAbove(0))
-        rightbin = h[unit+subdet][size][alpha][run].GetBinCenter(h[unit+subdet][size][alpha][run].FindLastBinAbove(0))
-        if maxlimit[alpha+subdet+unit][0] < maxval: maxlimit[alpha+subdet+unit][0] = maxval
-        if maxlimit[alpha+subdet+unit][1] > leftbin: maxlimit[alpha+subdet+unit][1] = leftbin
-        if maxlimit[alpha+subdet+unit][2] < rightbin: maxlimit[alpha+subdet+unit][2] = rightbin
-  for size in sizes: 
-    for alpha in ["Mean", "RMS"]:
-      if unit=="ADC":
-        rebin = int((maxlimit[alpha+subdet+unit][2]-maxlimit[alpha+subdet+unit][1])*30/50+0.5) # Default 30 bin per ADC count. Rebin to ~50 total
-      else:
-        rebin = int((maxlimit[alpha+subdet+unit][2]-maxlimit[alpha+subdet+unit][1])*10/50+0.5) # Default 10 bin per 1 fC. Rebin to ~50 total
-      if rebin > 1:
-        if size==sizes[0]: maxlimit[alpha+subdet+unit][0] = 0 #maxlimit[alpha+subdet+unit][0] * rebin
-        for run in runs:
-          h[unit+subdet][size][alpha][run].Rebin(rebin)
-          maxval = h[unit+subdet][size][alpha][run].GetMaximum()
-          if maxlimit[alpha+subdet+unit][0] < maxval: maxlimit[alpha+subdet+unit][0] = maxval
-      h[unit+subdet][size][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit[alpha+subdet+unit][1], maxlimit[alpha+subdet+unit][2])
-      h[unit+subdet][size][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit[alpha+subdet+unit][0]*1.3)
-
-  depths = [1, 2, 3, 4, 5, 6, 7] if subdet=="HE" else [1, 2, 3, 4]
-  for depth in depths:
-    hdepth[unit+subdet][depth] = {}
-    for alpha in ["Mean", "RMS"]:
-      if "depth"+alpha+subdet+unit not in maxlimit: maxlimit["depth"+alpha+subdet+unit] = [0, 999, 0]
-      hdepth[unit+subdet][depth][alpha] = {}
-      for run in runs:
-        hdepth[unit+subdet][depth][alpha][run] = fin.Get(subdet+"_depth"+str(depth)+"_ped"+unit+alpha+"_run"+run)
-        maxval = hdepth[unit+subdet][depth][alpha][run].GetMaximum()
-        leftbin = hdepth[unit+subdet][depth][alpha][run].GetBinCenter(hdepth[unit+subdet][depth][alpha][run].FindFirstBinAbove(0))
-        rightbin = hdepth[unit+subdet][depth][alpha][run].GetBinCenter(hdepth[unit+subdet][depth][alpha][run].FindLastBinAbove(0))
-        if maxlimit["depth"+alpha+subdet+unit][0] < maxval: maxlimit["depth"+alpha+subdet+unit][0] = maxval
-        if maxlimit["depth"+alpha+subdet+unit][1] > leftbin: maxlimit["depth"+alpha+subdet+unit][1] = leftbin
-        if maxlimit["depth"+alpha+subdet+unit][2] < rightbin: maxlimit["depth"+alpha+subdet+unit][2] = rightbin
-  for depth in depths:
-    for alpha in ["Mean", "RMS"]:
-      if unit=="ADC":
-        rebin = int((maxlimit["depth"+alpha+subdet+unit][2]-maxlimit["depth"+alpha+subdet+unit][1])*30/50+0.5)
-      else:
-        rebin = int((maxlimit["depth"+alpha+subdet+unit][2]-maxlimit["depth"+alpha+subdet+unit][1])*10/50+0.5)
-      if rebin > 1:
-        if depth==depths[0]: maxlimit["depth"+alpha+subdet+unit][0] = 0 #maxlimit["depth"+alpha+subdet+unit][0] * rebin
-        for run in runs:
-          hdepth[unit+subdet][depth][alpha][run].Rebin(rebin)
-          maxval = hdepth[unit+subdet][depth][alpha][run].GetMaximum()
-          if maxlimit["depth"+alpha+subdet+unit][0] < maxval: maxlimit["depth"+alpha+subdet+unit][0] = maxval
-      hdepth[unit+subdet][depth][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit["depth"+alpha+subdet+unit][1], maxlimit["depth"+alpha+subdet+unit][2])
-      hdepth[unit+subdet][depth][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit["depth"+alpha+subdet+unit][0]*1.3)
-
-  for size in sizes:
-    hphi[unit+subdet][size] = {}
-    for phi in [",36,37", ",18,19"]: # horizonal and vertical
-      hphi[unit+subdet][size][phi] = {}
-      for alpha in ["Mean", "RMS"]:
-        if "phi"+alpha+subdet+unit not in maxlimit: maxlimit["phi"+alpha+subdet+unit] = [0, 999, 0]
-        hphi[unit+subdet][size][phi][alpha] = {}
-        for run in runs:
-          hphi[unit+subdet][size][phi][alpha][run] = fin.Get(subdet+"_sipm"+size+"_phi"+phi+"_ped"+unit+alpha+"_run"+run)
-          maxval = hphi[unit+subdet][size][phi][alpha][run].GetMaximum()
-          leftbin = hphi[unit+subdet][size][phi][alpha][run].GetBinCenter(hphi[unit+subdet][size][phi][alpha][run].FindFirstBinAbove(0))
-          rightbin = hphi[unit+subdet][size][phi][alpha][run].GetBinCenter(hphi[unit+subdet][size][phi][alpha][run].FindLastBinAbove(0))
-          if maxlimit["phi"+alpha+subdet+unit][0] < maxval: maxlimit["phi"+alpha+subdet+unit][0] = maxval
-          if maxlimit["phi"+alpha+subdet+unit][1] > leftbin: maxlimit["phi"+alpha+subdet+unit][1] = leftbin
-          if maxlimit["phi"+alpha+subdet+unit][2] < rightbin: maxlimit["phi"+alpha+subdet+unit][2] = rightbin
-  for size in sizes:
-    for phi in [",36,37", ",18,19"]:
-      for alpha in ["Mean", "RMS"]:
-        if unit=="ADC":
-          rebin = int((maxlimit["phi"+alpha+subdet+unit][2]-maxlimit["phi"+alpha+subdet+unit][1])*30/50+0.5)
-        else:
-          rebin = int((maxlimit["phi"+alpha+subdet+unit][2]-maxlimit["phi"+alpha+subdet+unit][1])*10/50+0.5)
-        if rebin > 1:
-          if size==sizes[0] and phi==",36,37": maxlimit["phi"+alpha+subdet+unit][0] = 0 #maxlimit["phi"+alpha+subdet+unit][0] * rebin
+      for size in sizes:
+        h[unit+subdet][size] = {}
+        for alpha in ["Mean", "RMS"]:
+          if alpha+subdet+unit not in maxlimit: maxlimit[alpha+subdet+unit] = [0, 999, 0] # Highest y-axis value, Smallest bin with entry, Highest bin with entry
+          h[unit+subdet][size][alpha] = {}
           for run in runs:
-            hphi[unit+subdet][size][phi][alpha][run].Rebin(rebin)
-            maxval = hphi[unit+subdet][size][phi][alpha][run].GetMaximum()
-            if maxlimit["phi"+alpha+subdet+unit][0] < maxval: maxlimit["phi"+alpha+subdet+unit][0] = maxval
-        hphi[unit+subdet][size][phi][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit["phi"+alpha+subdet+unit][1], maxlimit["phi"+alpha+subdet+unit][2])
-        hphi[unit+subdet][size][phi][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit["phi"+alpha+subdet+unit][0]*1.3)
+            h[unit+subdet][size][alpha][run] = fin.Get(subdet+"_sipm"+size+"_ped"+unit+alpha+"_run"+run)
+            maxval = h[unit+subdet][size][alpha][run].GetMaximum()
+            leftbin = h[unit+subdet][size][alpha][run].GetBinCenter(h[unit+subdet][size][alpha][run].FindFirstBinAbove(0))
+            rightbin = h[unit+subdet][size][alpha][run].GetBinCenter(h[unit+subdet][size][alpha][run].FindLastBinAbove(0))
+            if maxlimit[alpha+subdet+unit][0] < maxval: maxlimit[alpha+subdet+unit][0] = maxval
+            if maxlimit[alpha+subdet+unit][1] > leftbin: maxlimit[alpha+subdet+unit][1] = leftbin
+            if maxlimit[alpha+subdet+unit][2] < rightbin: maxlimit[alpha+subdet+unit][2] = rightbin
+      for size in sizes: 
+        for alpha in ["Mean", "RMS"]:
+          if unit=="ADC":
+            rebin = int((maxlimit[alpha+subdet+unit][2]-maxlimit[alpha+subdet+unit][1])*30/50+0.5) # Default 30 bin per ADC count. Rebin to ~50 total
+          else:
+            rebin = int((maxlimit[alpha+subdet+unit][2]-maxlimit[alpha+subdet+unit][1])*10/50+0.5) # Default 10 bin per 1 fC. Rebin to ~50 total
+          if rebin > 1:
+            if size==sizes[0]: maxlimit[alpha+subdet+unit][0] = 0 #maxlimit[alpha+subdet+unit][0] * rebin
+            for run in runs:
+              h[unit+subdet][size][alpha][run].Rebin(rebin)
+              maxval = h[unit+subdet][size][alpha][run].GetMaximum()
+              if maxlimit[alpha+subdet+unit][0] < maxval: maxlimit[alpha+subdet+unit][0] = maxval
+          h[unit+subdet][size][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit[alpha+subdet+unit][1], maxlimit[alpha+subdet+unit][2])
+          h[unit+subdet][size][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit[alpha+subdet+unit][0]*1.3)
 
-for unit in ["ADC", "FC"]:
- for alpha in ["Mean", "RMS"]:
-  c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
-  c[-1].Divide(2,2)
+      depths = [1, 2, 3, 4, 5, 6, 7] if subdet=="HE" else [1, 2, 3, 4]
+      for depth in depths:
+        hdepth[unit+subdet][depth] = {}
+        for alpha in ["Mean", "RMS"]:
+          if "depth"+alpha+subdet+unit not in maxlimit: maxlimit["depth"+alpha+subdet+unit] = [0, 999, 0]
+          hdepth[unit+subdet][depth][alpha] = {}
+          for run in runs:
+            hdepth[unit+subdet][depth][alpha][run] = fin.Get(subdet+"_depth"+str(depth)+"_ped"+unit+alpha+"_run"+run)
+            maxval = hdepth[unit+subdet][depth][alpha][run].GetMaximum()
+            leftbin = hdepth[unit+subdet][depth][alpha][run].GetBinCenter(hdepth[unit+subdet][depth][alpha][run].FindFirstBinAbove(0))
+            rightbin = hdepth[unit+subdet][depth][alpha][run].GetBinCenter(hdepth[unit+subdet][depth][alpha][run].FindLastBinAbove(0))
+            if maxlimit["depth"+alpha+subdet+unit][0] < maxval: maxlimit["depth"+alpha+subdet+unit][0] = maxval
+            if maxlimit["depth"+alpha+subdet+unit][1] > leftbin: maxlimit["depth"+alpha+subdet+unit][1] = leftbin
+            if maxlimit["depth"+alpha+subdet+unit][2] < rightbin: maxlimit["depth"+alpha+subdet+unit][2] = rightbin
+      for depth in depths:
+        for alpha in ["Mean", "RMS"]:
+          if unit=="ADC":
+            rebin = int((maxlimit["depth"+alpha+subdet+unit][2]-maxlimit["depth"+alpha+subdet+unit][1])*30/50+0.5)
+          else:
+            rebin = int((maxlimit["depth"+alpha+subdet+unit][2]-maxlimit["depth"+alpha+subdet+unit][1])*10/50+0.5)
+          if rebin > 1:
+            if depth==depths[0]: maxlimit["depth"+alpha+subdet+unit][0] = 0 #maxlimit["depth"+alpha+subdet+unit][0] * rebin
+            for run in runs:
+              hdepth[unit+subdet][depth][alpha][run].Rebin(rebin)
+              maxval = hdepth[unit+subdet][depth][alpha][run].GetMaximum()
+              if maxlimit["depth"+alpha+subdet+unit][0] < maxval: maxlimit["depth"+alpha+subdet+unit][0] = maxval
+          hdepth[unit+subdet][depth][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit["depth"+alpha+subdet+unit][1], maxlimit["depth"+alpha+subdet+unit][2])
+          hdepth[unit+subdet][depth][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit["depth"+alpha+subdet+unit][0]*1.3)
 
-  ##### Draw histograms per SiPM size
-  i=1
-  for subdet in ["HE", "HB"]:
-    for size in sizes:
-      c[-1].cd(i)
-      for j,run in enumerate(reversed(runs)):
-        h[unit+subdet][size][alpha][run].SetLineColor(j+1)
-        label = subdet + " " + size + " SiPM Pedestal "+alpha
-        if j==0:
-          h[unit+subdet][size][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
-          h[unit+subdet][size][alpha][run].SetTitle(label)
-          h[unit+subdet][size][alpha][run].Draw()
-        else:
-          h[unit+subdet][size][alpha][run].Draw("same")
-      legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
-      legend[-1].SetNColumns(2)
-      for run in runs:
-        legend[-1].AddEntry(h[unit+subdet][size][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(h[unit+subdet][size][alpha][run].GetMean()),"l")
-      legend[-1].Draw()
-      i += 1
-  c[-1].Draw()
-  c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".png")
-  c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".pdf")
+      # for size in sizes:
+      #   hphi[unit+subdet][size] = {}
+      #   for phi in [",36,37", ",18,19"]: # horizonal and vertical.    
+      #     hphi[unit+subdet][size][phi] = {}
+      #     for alpha in ["Mean", "RMS"]:
+      #       if "phi"+alpha+subdet+unit not in maxlimit: maxlimit["phi"+alpha+subdet+unit] = [0, 999, 0]
+      #       hphi[unit+subdet][size][phi][alpha] = {}
+      #       for run in runs:
+      #         print(f"Getting histogram named {subdet}_sipm{size}_phi{phi}_ped{unit}{alpha}_run{run}")
+      #         hphi[unit+subdet][size][phi][alpha][run] = fin.Get(subdet+"_sipm"+size+"_phi"+phi+"_ped"+unit+alpha+"_run"+run)
+      #         maxval = hphi[unit+subdet][size][phi][alpha][run].GetMaximum()
+      #         leftbin = hphi[unit+subdet][size][phi][alpha][run].GetBinCenter(hphi[unit+subdet][size][phi][alpha][run].FindFirstBinAbove(0))
+      #         rightbin = hphi[unit+subdet][size][phi][alpha][run].GetBinCenter(hphi[unit+subdet][size][phi][alpha][run].FindLastBinAbove(0))
+      #         if maxlimit["phi"+alpha+subdet+unit][0] < maxval: maxlimit["phi"+alpha+subdet+unit][0] = maxval
+      #         if maxlimit["phi"+alpha+subdet+unit][1] > leftbin: maxlimit["phi"+alpha+subdet+unit][1] = leftbin
+      #         if maxlimit["phi"+alpha+subdet+unit][2] < rightbin: maxlimit["phi"+alpha+subdet+unit][2] = rightbin
+      # for size in sizes:
+      #   for phi in [",36,37", ",18,19"]:
+      #     for alpha in ["Mean", "RMS"]:
+      #       if unit=="ADC":
+      #         rebin = int((maxlimit["phi"+alpha+subdet+unit][2]-maxlimit["phi"+alpha+subdet+unit][1])*30/50+0.5)
+      #       else:
+      #         rebin = int((maxlimit["phi"+alpha+subdet+unit][2]-maxlimit["phi"+alpha+subdet+unit][1])*10/50+0.5)
+      #       if rebin > 1:
+      #         if size==sizes[0] and phi==",36,37": maxlimit["phi"+alpha+subdet+unit][0] = 0 #maxlimit["phi"+alpha+subdet+unit][0] * rebin
+      #         for run in runs:
+      #           hphi[unit+subdet][size][phi][alpha][run].Rebin(rebin)
+      #           maxval = hphi[unit+subdet][size][phi][alpha][run].GetMaximum()
+      #           if maxlimit["phi"+alpha+subdet+unit][0] < maxval: maxlimit["phi"+alpha+subdet+unit][0] = maxval
+      #       hphi[unit+subdet][size][phi][alpha][runs[-1]].GetXaxis().SetRangeUser(maxlimit["phi"+alpha+subdet+unit][1], maxlimit["phi"+alpha+subdet+unit][2])
+      #       hphi[unit+subdet][size][phi][alpha][runs[-1]].GetYaxis().SetRangeUser(0, maxlimit["phi"+alpha+subdet+unit][0]*1.3)
 
-  c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
-  c[-1].Divide(2,2)
-
-
-  ##### Draw histograms per depth
-  for subdet in ["HE", "HB"]:
-    if subdet=="HE":
-      c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 1600, 800 ))
-      c[-1].Divide(4,2)
-    else:
+  for unit in ["ADC", "FC"]:
+    for alpha in ["Mean", "RMS"]:
       c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
       c[-1].Divide(2,2)
-    i=1
-    for depth in [1, 2, 3, 4, 5, 6, 7]:
-      if subdet=="HB" and depth>4: continue
-      c[-1].cd(i)
-      for j,run in enumerate(reversed(runs)):
-        hdepth[unit+subdet][depth][alpha][run].SetLineColor(j+1)
-        label = subdet + " depth " + str(depth) + " Pedestal "+alpha
-        if j==0:
-          if unit=="ADC":
-            hdepth[unit+subdet][depth][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
-          else:
-            hdepth[unit+subdet][depth][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (fC)")
-          hdepth[unit+subdet][depth][alpha][run].SetTitle(label)
-          hdepth[unit+subdet][depth][alpha][run].Draw()
-        else:
-          hdepth[unit+subdet][depth][alpha][run].Draw("same")
-      legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
-      legend[-1].SetNColumns(2)
-      for run in runs:
-        legend[-1].AddEntry(hdepth[unit+subdet][depth][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(hdepth[unit+subdet][depth][alpha][run].GetMean()),"l")
-      legend[-1].Draw()
-      i += 1
-    c[-1].Draw()
-    c[-1].SaveAs(output+"PedestalPerDepth_"+alpha+"_"+subdet+"_"+unit+".png")
-    c[-1].SaveAs(output+"PedestalPerDepth_"+alpha+"_"+subdet+"_"+unit+".pdf")
 
-  ##### Draw histograms per phi
-  for subdet in ["HE", "HB"]:
-    c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
-    c[-1].Divide(2,2)
-    i=1
-    for size in sizes:
-      for phi in [",36,37", ",18,19"]:
-        c[-1].cd(i)
-        for j,run in enumerate(reversed(runs)):
-          hphi[unit+subdet][size][phi][alpha][run].SetLineColor(j+1)
-          phirange = "for iphi in [36,37] " if "36" in phi else "for iphi in [18,19] "
-          label = subdet + " " + size + " SiPM Pedestal " + phirange +alpha
-          if j==0:
-            if unit=="ADC":
-              hphi[unit+subdet][size][phi][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
+      ##### Draw histograms per SiPM size
+      i=1
+      for subdet in ["HE", "HB"]:
+        for size in sizes:
+          c[-1].cd(i)
+          for j,run in enumerate(reversed(runs)):
+            h[unit+subdet][size][alpha][run].SetLineColor(j+1)
+            label = subdet + " " + size + " SiPM Pedestal "+alpha
+            if j==0:
+              h[unit+subdet][size][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
+              h[unit+subdet][size][alpha][run].SetTitle(label)
+              h[unit+subdet][size][alpha][run].Draw()
             else:
-              hphi[unit+subdet][size][phi][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (fC)")
-            hphi[unit+subdet][size][phi][alpha][run].SetTitle(label)
-            hphi[unit+subdet][size][phi][alpha][run].Draw()
-          else:
-            hphi[unit+subdet][size][phi][alpha][run].Draw("same")
-        legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
-        legend[-1].SetNColumns(2)
-        for run in runs:
-          legend[-1].AddEntry(hphi[unit+subdet][size][phi][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(hphi[unit+subdet][size][phi][alpha][run].GetMean()),"l")
-        legend[-1].Draw()
-        i += 1
-    c[-1].Draw()
-    c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".png")
-    c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".pdf")
+              h[unit+subdet][size][alpha][run].Draw("same")
+          legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
+          legend[-1].SetNColumns(2)
+          for run in runs:
+            legend[-1].AddEntry(h[unit+subdet][size][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(h[unit+subdet][size][alpha][run].GetMean()),"l")
+          legend[-1].Draw()
+          i += 1
+      c[-1].Draw()
+      c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".png")
+      c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".pdf")
+
+      c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
+      c[-1].Divide(2,2)
+
+
+      ##### Draw histograms per depth
+      for subdet in ["HE", "HB"]:
+        if subdet=="HE":
+          c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 1600, 800 ))
+          c[-1].Divide(4,2)
+        else:
+          c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
+          c[-1].Divide(2,2)
+        i=1
+        for depth in [1, 2, 3, 4, 5, 6, 7]:
+          if subdet=="HB" and depth>4: continue
+          c[-1].cd(i)
+          for j,run in enumerate(reversed(runs)):
+            hdepth[unit+subdet][depth][alpha][run].SetLineColor(j+1)
+            label = subdet + " depth " + str(depth) + " Pedestal "+alpha
+            if j==0:
+              if unit=="ADC":
+                hdepth[unit+subdet][depth][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
+              else:
+                hdepth[unit+subdet][depth][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (fC)")
+              hdepth[unit+subdet][depth][alpha][run].SetTitle(label)
+              hdepth[unit+subdet][depth][alpha][run].Draw()
+            else:
+              hdepth[unit+subdet][depth][alpha][run].Draw("same")
+          legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
+          legend[-1].SetNColumns(2)
+          for run in runs:
+            legend[-1].AddEntry(hdepth[unit+subdet][depth][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(hdepth[unit+subdet][depth][alpha][run].GetMean()),"l")
+          legend[-1].Draw()
+          i += 1
+        c[-1].Draw()
+        c[-1].SaveAs(output+"PedestalPerDepth_"+alpha+"_"+subdet+"_"+unit+".png")
+        c[-1].SaveAs(output+"PedestalPerDepth_"+alpha+"_"+subdet+"_"+unit+".pdf")
+
+      ##### Draw histograms per phi
+      for subdet in ["HE", "HB"]:
+        c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
+        c[-1].Divide(2,2)
+        i=1
+        # for size in sizes:
+        #   for phi in [",36,37", ",18,19"]:
+        #     c[-1].cd(i)
+        #     for j,run in enumerate(reversed(runs)):
+        #       hphi[unit+subdet][size][phi][alpha][run].SetLineColor(j+1)
+        #       phirange = "for iphi in [36,37] " if "36" in phi else "for iphi in [18,19] "
+        #       label = subdet + " " + size + " SiPM Pedestal " + phirange +alpha
+        #       if j==0:
+        #         if unit=="ADC":
+        #           hphi[unit+subdet][size][phi][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (QIE11 ADC)")
+        #         else:
+        #           hphi[unit+subdet][size][phi][alpha][run].GetXaxis().SetTitle("Pedestal "+alpha+" (fC)")
+        #         hphi[unit+subdet][size][phi][alpha][run].SetTitle(label)
+        #         hphi[unit+subdet][size][phi][alpha][run].Draw()
+        #       else:
+        #         hphi[unit+subdet][size][phi][alpha][run].Draw("same")
+        #     legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
+        #     legend[-1].SetNColumns(2)
+        #     for run in runs:
+        #       legend[-1].AddEntry(hphi[unit+subdet][size][phi][alpha][run],"Run from "+GetDay(run)+", Mean={:.3f}".format(hphi[unit+subdet][size][phi][alpha][run].GetMean()),"l")
+        #     legend[-1].Draw()
+        #     i += 1
+        c[-1].Draw()
+        c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".png")
+        c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".pdf")
 
 # Extrapolation plots (makes more sense for lumi)
 if dowhat=="lumi":
