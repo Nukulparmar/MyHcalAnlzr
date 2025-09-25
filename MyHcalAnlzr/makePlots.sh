@@ -13,10 +13,17 @@ mv ${dir}/byLumi/Ex* ${dir}/extrapolations
 mkdir ${dir}/extrapolations_FC2ADC
 mv ${dir}/extrapolations/*FC2ADC* ${dir}/extrapolations_FC2ADC
 
-mv Table*txt /afs/cern.ch/user/c/ccrovell/public/PED_tables/
-mv ${dir}/byDay/* /eos/user/c/ccrovell/www/plots_archive/PED_plots/byDay/
-mv ${dir}/byLumi/* /eos/user/c/ccrovell/www/plots_archive/PED_plots/byLumi/
-mv ${dir}/histograms/* /eos/user/c/ccrovell/www/plots_archive/PED_plots/histograms/
-mv ${dir}/extrapolations/* /eos/user/c/ccrovell/www/plots_archive/PED_plots/extrapolations/
-mv ${dir}/extrapolations_FC2ADC/* /eos/user/c/ccrovell/www/plots_archive/PED_plots/extrapolations_FC2ADC/
+mv Table*txt /eos/user/n/nparmar/HCAL/MyHcalAnlzr/PED_tables/
+# Ensure EOS directories exist
+mkdir -p /eos/user/n/nparmar/www/PED_plots/byDay
+mkdir -p /eos/user/n/nparmar/www/PED_plots/byLumi
+mkdir -p /eos/user/n/nparmar/www/PED_plots/histograms
+mkdir -p /eos/user/n/nparmar/www/PED_plots/extrapolations
+mkdir -p /eos/user/n/nparmar/www/PED_plots/extrapolations_FC2ADC
+
+mv ${dir}/byDay/* /eos/user/n/nparmar/www/PED_plots/byDay/
+mv ${dir}/byLumi/* /eos/user/n/nparmar/www/PED_plots/byLumi/
+mv ${dir}/histograms/* /eos/user/n/nparmar/www/PED_plots/histograms/
+mv ${dir}/extrapolations/* /eos/user/n/nparmar/www/PED_plots/extrapolations/
+mv ${dir}/extrapolations_FC2ADC/* /eos/user/n/nparmar/www/PED_plots/extrapolations_FC2ADC/
 rm -r ${dir}

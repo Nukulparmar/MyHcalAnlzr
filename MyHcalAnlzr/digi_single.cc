@@ -29,12 +29,12 @@ int main(int argc, char *argv[])
 
   string kind = argv[1]; // "Full" or "Ped"
   //float days = atof(argv[2]); // Integer
-  //float lumi = atof(argv[3]); // Float
+  float lumi = atof(argv[3]); // Float
   string floatday = argv[4]; // e.g. "05.07"
   string runid = argv[5]; // Integer
 
 
-  TFile *f = new TFile(("/eos/user/c/ccrovell/HCAL/MyHcalAnlzr/output_LocalRuns_"+kind+"_Run"+runid+".root").c_str(), "read");
+  TFile *f = new TFile(("/eos/user/n/nparmar/HCAL/MyHcalAnlzr/output_LocalRuns_"+kind+"_Run"+runid+".root").c_str(), "read");
   TNtuple* qiedigi = (TNtuple*)f->Get("MyHcalAnlzr/qiedigi");
   int ntot = qiedigi->GetEntries();
   std::cout << "Reading in input file, total " << ntot << " Entries." << std::endl;
@@ -118,11 +118,35 @@ int main(int argc, char *argv[])
   }
 
 
+  // std::cout << "Writing table..." << std::endl;
+
+  // // ofstream tablefile;
+  // // tablefile.open("Table_Run"+runid+"_"+floatday+".2025.txt");
+  // // tablefile << setw(8) << "SubDet" << setw(8) << "SiPM" << setw(8) << "ieta" << setw(8) << "iphi" << setw(8) << "depth" << setw(12) << "ADC Mean" << setw(12) << "ADC RMS" << setw(12) << "fC Mean" << setw(12) << "fC RMS" << "\n";
+  // // for(int t=0; t<3; t++){ // 0=Small SiPM, 1=Large SiPM, 2=HF&HO
+  // //   for(int i=0; i<82; i++){ // Number of ieta bins -41..41, excluding 0
+  // //     for(int j=0; j<72; j++){ // Number of iphi bins 1..72
+  // //       for(int k=0; k<7; k++){ // Number of depths 1..7
+  // //         if (histarray[0][t][i][j][k]->GetEntries() > 0){
+  // //           det = "";
+  // //           if (t==2 && (i<13 || i>68)) det = "HF";
+  // //           else if (t==2 && (i>25 && i<56)) det = "HO";
+  // //           else if (t<2 && ((i>=26 && i<=55) || (i==25 && k<3) || (i==56 && k<3))) det = "HB";
+  // //           else if (t<2 && ((i>=12 && i<=24) || (i>=57 && i<=69) || (i==25 && k>=3) || (i==56 && k>=3))) det = "HE";
+  // //           if (t==2) size = "";
+  // //           else size = t==0?"Small":"Large";
+  // //           tablefile << setw(8) << det << setw(8) << size << setw(8) << (i<41?i-41:i-40) << setw(8) << (j+1) << setw(8) << (k+1) << setw(12) << histarray[0][t][i][j][k]->GetMean() << setw(12) << histarray[0][t][i][j][k]->GetRMS() << setw(12) << histarray[1][t][i][j][k]->GetMean() << setw(12) << histarray[1][t][i][j][k]->GetRMS() << "\n";
+  // //         }
+  // //       }
+  // //     }
+  // //   }
+  // // }
+  // // tablefile.close();
   std::cout << "Writing table..." << std::endl;
 
   ofstream tablefile;
-  tablefile.open("Table_Run"+runid+"_"+floatday+".2023.txt");
-  tablefile << setw(8) << "SubDet" << setw(8) << "SiPM" << setw(8) << "ieta" << setw(8) << "iphi" << setw(8) << "depth" << setw(12) << "ADC Mean" << setw(12) << "ADC RMS" << setw(12) << "fC Mean" << setw(12) << "fC RMS" << "\n";
+  tablefile.open("Table_Run"+runid+"_"+floatday+".2025.txt");
+  tablefile << setw(8) << "SubDet" << setw(8) << "SiPM" << setw(8) << "ieta" << setw(8) << "iphi" << setw(8) << "depth" << setw(12) << "Lumi" << setw(12) << "ADC Mean" << setw(12) << "ADC RMS" << setw(12) << "fC Mean" << setw(12) << "fC RMS" << "\n";
   for(int t=0; t<3; t++){ // 0=Small SiPM, 1=Large SiPM, 2=HF&HO
     for(int i=0; i<82; i++){ // Number of ieta bins -41..41, excluding 0
       for(int j=0; j<72; j++){ // Number of iphi bins 1..72
@@ -135,7 +159,7 @@ int main(int argc, char *argv[])
             else if (t<2 && ((i>=12 && i<=24) || (i>=57 && i<=69) || (i==25 && k>=3) || (i==56 && k>=3))) det = "HE";
             if (t==2) size = "";
             else size = t==0?"Small":"Large";
-            tablefile << setw(8) << det << setw(8) << size << setw(8) << (i<41?i-41:i-40) << setw(8) << (j+1) << setw(8) << (k+1) << setw(12) << histarray[0][t][i][j][k]->GetMean() << setw(12) << histarray[0][t][i][j][k]->GetRMS() << setw(12) << histarray[1][t][i][j][k]->GetMean() << setw(12) << histarray[1][t][i][j][k]->GetRMS() << "\n";
+            tablefile << setw(8) << det << setw(8) << size << setw(8) << (i<41?i-41:i-40) << setw(8) << (j+1) << setw(8) << (k+1) << setw(12) << lumi << setw(12) << histarray[0][t][i][j][k]->GetMean() << setw(12) << histarray[0][t][i][j][k]->GetRMS() << setw(12) << histarray[1][t][i][j][k]->GetMean() << setw(12) << histarray[1][t][i][j][k]->GetRMS() << "\n";
           }
         }
       }

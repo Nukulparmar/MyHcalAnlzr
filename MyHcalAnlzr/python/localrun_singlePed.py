@@ -53,9 +53,9 @@ process.MyHcalAnlzr = cms.EDAnalyzer('MyHcalAnlzr_PEDonly',
 #	EERecHitCollection = cms.InputTag("ecalRecHit","EcalRecHitsEE")
         runtype = cms.untracked.string("Local")
 )
-
+eosLocation = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr"
 process.TFileService = cms.Service("TFileService",
-      fileName = cms.string("/eos/user/c/ccrovell/HCAL/MyHcalAnlzr/output_LocalRuns_Ped_Run"+RUN+".root"),
+      fileName = cms.string(eosLocation+"/output_LocalRuns_Ped_Run"+RUN+".root"),
       closeFileFast = cms.untracked.bool(True)
 )
 
