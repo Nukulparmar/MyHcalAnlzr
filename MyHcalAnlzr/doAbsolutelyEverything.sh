@@ -1,50 +1,135 @@
-#Start of Collisions
-#source doEverything.sh 378220 378219 1 0.0 20.03 #Days since March 19
-#source doEverything.sh 378252 378251 2 0.0 21.03
-#source doEverything.sh 378276 378275 3 0.0 22.03
-#source doEverything.sh 378332 378331 4 0.0 23.03
-#source doEverything.sh 378354 378353 5 0.0 24.03
-#source doEverything.sh 378425 378423 6 0.0 25.03
-#source doEverything.sh 378459 378457 7 0.0 26.03
-#source doEverything.sh 378580 378579 8 0.0 27.03
-#source doEverything.sh 378612 378611 9 0.0 28.03
-#source doEverything.sh 378634 378631 10 0.0 29.03
-#source doEverything.sh 378680 378678 11 0.0 30.03
-#source doEverything.sh 378722 378721 12 0.0 31.03
-#source doEverything.sh 378758 378757 13 0.0 01.04
-#source doEverything.sh 378790 378789 14 0.0 02.04
-#source doEverything.sh 378820 378821 15 0.0 03.04
-#source doEverything.sh 379020 379019 18 0.0 06.04
-#source doEverything.sh 379043 379042 19 0.003 07.04
-#source doEverything.sh 379124 379123 20 0.0172 08.04
-#source doEverything.sh 379176 379177 21 0.0288 09.04
-#source doEverything.sh 379205 379206 22 0.066 10.04
-#source doEverything.sh 379257 379258 23 0.119 11.04 
-#source doEverything.sh 379372 379373 25 0.546 13.04
-#source doEverything.sh 379396 379397 26 0.710 14.04
-#source doEverything.sh 379535 379536 29 1.579 17.04
-#source doEverything.sh 379635 379637 30 2.291 18.04
-#source doEverything.sh 379671 379675 31 2.779 19.04
-#source doEverything.sh 379736 379737 32 3.400 20.04
-#source doEverything.sh 379811 379812 34 3.543 22.04
-#source doEverything.sh 379880 379888 36 3.832 24.04
-#source doEverything.sh 379961 379963 37 4.259 25.04
-#source doEverything.sh 380014 380015 38 4.978 26.04
-#source doEverything.sh 380079 380082 40 6.684 28.04
-#source doEverything.sh 380143 380145 42 8.032 30.04
-#source doEverything.sh 380271 380273 44 8.581 02.05
-#source doEverything.sh 380317 380318 45 9.024 03.05
-#source doEverything.sh 380368 380370 46 10.302 04.05
-#source doEverything.sh 380389 380391 47 11.215 05.05 
-#source doEverything.sh 380454 380455 49 13.064 07.05
-#source doEverything.sh 380494 380496 50 13.644 08.05
-#source doEverything.sh 380524 380525 51 14.646 09.05
-#source doEverything.sh 380572 380574 52 15.302 10.05
-#source doEverything.sh 380609 380610 53 15.324 11.05
-#source doEverything.sh 380631 380633 54 16.014 12.05
-#source doEverything.sh 380664 380665 55 16.398 13.05
-#source doEverything.sh 380790 380792 57 16.398 15.05
-#source doEverything.sh 380823 380827 58 16.398 16.05
-#source doEverything.sh 380889 380890 60 16.399 18.05
-#source doEverything.sh 380908 380910 61 16.424 19.05
-source doEverything.sh 380983 380984 63 17.337 21.05
+
+#Format: source doEverything.sh combined_runNumber pedestal_runNumber days_since delivery_lumi combined_date
+
+
+
+# source doEverything.sh 390962 390964 0 0.000 22.04
+# source doEverything.sh 391004 391006 1 0.000 23.04
+# source doEverything.sh 391282 391279 7 0.000 29.04
+# source doEverything.sh 391389 391388 8 0.000 30.04
+# source doEverything.sh 391425 391421 9 0.000 01.05
+# source doEverything.sh 391494 391495 10 0.000 02.05
+# source doEverything.sh 391534 391533 11 0.000 03.05
+# source doEverything.sh 391594 391593 12 0.000 04.05
+# source doEverything.sh 391611 391610 13 0.000 05.05
+# source doEverything.sh 391718 391719 14 0.004 06.05
+# source doEverything.sh 391748 391750 15 0.004 07.05
+# source doEverything.sh 391812 391813 16 0.004 08.05
+# source doEverything.sh 391833 391834 17 0.008 09.05
+# source doEverything.sh 391899 391901 18 0.018 10.05
+# source doEverything.sh 391927 391928 19 0.041 11.05
+# source doEverything.sh 391959 391960 20 0.060 12.05
+# source doEverything.sh 392010 392005 21 0.060 13.05
+# source doEverything.sh 392087 392083 22 0.196 14.05
+# source doEverything.sh 392127 392122 23 0.354 15.05
+# source doEverything.sh 392150 392145 24 0.354 16.05
+# source doEverything.sh 392215 392212 25 0.790 17.05
+# source doEverything.sh 392231 392226 26 1.010 18.05
+# source doEverything.sh 392265 392257 27 1.355 19.05
+# source doEverything.sh 392311 392315 28 1.775 20.05
+# source doEverything.sh 392372 392368 29 2.420 21.05
+# source doEverything.sh 392498 392494 32 3.585 24.05
+# source doEverything.sh 392535 392531 33 4.533 25.05
+# source doEverything.sh 392578 392559 34 5.441 26.05
+# source doEverything.sh 392627 392623 35 5.441 27.05
+# source doEverything.sh 392698 392689 37 8.191 29.05
+# source doEverything.sh 392723 392720 38 9.536 30.05
+# source doEverything.sh 392762 392755 39 10.685 31.05
+# source doEverything.sh 392802 392790 40 10.785 01.06
+# source doEverything.sh 392934 392929 42 11.658 03.06
+# source doEverything.sh 392967 392964 43 12.590 04.06
+# source doEverything.sh 393008 393002 44 14.402 05.06
+# source doEverything.sh 393035 393033 45 14.865 06.06
+# source doEverything.sh 393078 393075 46 14.968 07.06
+# source doEverything.sh 393122 393117 47 16.826 08.06
+# source doEverything.sh 393161 393155 48 17.622 09.06
+# source doEverything.sh 393194 393189 49 17.965 10.06
+# source doEverything.sh 393249 393245 51 19.466 12.06
+# source doEverything.sh 393294 393286 52 20.149 13.06
+# source doEverything.sh 393338 393334 53 21.049 14.06
+# source doEverything.sh 393361 393357 54 21.617 15.06
+# source doEverything.sh 393391 393385 55 22.660 16.06
+# source doEverything.sh 393437 393431 56 22.660 17.06
+# source doEverything.sh 393475 393472 58 24.798 19.06
+# source doEverything.sh 393522 393519 59 24.799 20.06
+# source doEverything.sh 393540 393537 62 24.799 23.06
+# source doEverything.sh 393558 393553 63 24.799 24.06
+# source doEverything.sh 393783 393778 67 24.799 28.06
+# source doEverything.sh 393841 393837 68 24.799 29.06
+# source doEverything.sh 393876 393873 69 24.799 30.06
+# source doEverything.sh 393967 393964 70 24.799 01.07
+# source doEverything.sh 393994 393990 71 24.799 02.07
+# source doEverything.sh 394035 394029 72 24.799 03.07
+# source doEverything.sh 394111 394105 73 24.799 04.07
+# source doEverything.sh 394165 394160 74 24.799 05.07
+# source doEverything.sh 394201 394194 75 24.799 06.07
+# source doEverything.sh 394224 394222 76 24.799 07.07
+# source doEverything.sh 394255 394252 77 24.799 08.07
+# source doEverything.sh 394289 394286 78 24.799 09.07
+# source doEverything.sh 394374 394368 79 24.799 10.07
+# source doEverything.sh 394440 394438 80 24.799 11.07
+# source doEverything.sh 394456 394454 81 24.799 12.07
+# source doEverything.sh 394479 394475 82 24.800 13.07
+# source doEverything.sh 394519 394516 83 24.800 14.07
+# source doEverything.sh 394554 394550 84 24.800 15.07
+# source doEverything.sh 394609 394604 85 24.800 16.07
+# source doEverything.sh 394651 394645 86 24.831 17.07
+# source doEverything.sh 394690 394686 87 25.356 18.07
+# source doEverything.sh 394740 394736 88 25.889 19.07
+# source doEverything.sh 394766 394759 89 27.034 20.07
+# source doEverything.sh 394801 394794 90 28.690 21.07
+# source doEverything.sh 394876 394869 91 30.049 22.07
+# source doEverything.sh 394929 394923 92 30.738 23.07
+# source doEverything.sh 394981 394973 93 31.733 24.07
+# source doEverything.sh 395007 395000 94 33.686 25.07
+# source doEverything.sh 395051 395046 95 34.603 26.07
+# source doEverything.sh 395090 395086 96 34.603 27.07
+# source doEverything.sh 395130 395121 97 35.739 28.07
+# source doEverything.sh 395158 395154 98 36.720 29.07
+# source doEverything.sh 395215 395211 99 37.586 30.07
+# source doEverything.sh 395278 395273 100 37.901 31.07
+# source doEverything.sh 395319 395314 101 37.901 01.08
+# source doEverything.sh 395362 395351 102 39.181 02.08
+# source doEverything.sh 395403 395399 104 41.126 04.08
+# source doEverything.sh 395456 395449 105 42.195 05.08
+# source doEverything.sh 395539 395531 107 44.188 07.08
+# source doEverything.sh 395586 395581 108 44.413 08.08
+# source doEverything.sh 395634 395628 109 45.197 09.08
+# source doEverything.sh 395679 395675 111 46.965 11.08
+# source doEverything.sh 395782 395777 114 50.552 14.08
+# source doEverything.sh 395830 395825 115 50.901 15.08
+# source doEverything.sh 395908 395903 116 52.115 16.08
+# source doEverything.sh 395936 395931 117 53.306 17.08
+# source doEverything.sh 395957 395950 118 54.614 18.08
+# source doEverything.sh 396000 395993 119 55.508 19.08
+# source doEverything.sh 396037 396033 120 56.624 20.08
+# source doEverything.sh 396068 396063 121 56.736 21.08
+# source doEverything.sh 396114 396110 122 57.421 22.08
+# source doEverything.sh 396143 396139 123 59.394 23.08
+# source doEverything.sh 396170 396164 124 60.481 24.08
+# source doEverything.sh 396203 396195 125 62.297 25.08
+# source doEverything.sh 396236 396231 126 63.392 26.08
+# source doEverything.sh 396276 396268 127 64.762 27.08
+# source doEverything.sh 396293 396287 128 65.721 28.08
+# source doEverything.sh 396354 396346 129 66.843 29.08
+# source doEverything.sh 396384 396377 130 68.312 30.08
+# source doEverything.sh 396412 396408 131 70.121 31.08
+# source doEverything.sh 396432 396429 132 70.334 01.09
+# source doEverything.sh 396506 396502 133 70.334 02.09
+# source doEverything.sh 396533 396524 134 70.334 03.09
+# source doEverything.sh 396590 396586 135 70.334 04.09
+# source doEverything.sh 396652 396648 136 70.334 05.09
+# source doEverything.sh 396690 396686 137 70.334 06.09
+# source doEverything.sh 396716 396711 138 70.334 07.09
+# source doEverything.sh 396839 396833 141 71.697 10.09
+# source doEverything.sh 396905 396898 143 74.635 12.09
+# source doEverything.sh 396977 396969 145 75.648 14.09
+# source doEverything.sh 397010 397005 146 76.674 15.09
+# source doEverything.sh 397044 397038 147 77.687 16.09
+# source doEverything.sh 397068 397064 148 78.141 17.09
+# source doEverything.sh 397113 397110 149 78.931 18.09
+# source doEverything.sh 397202 397197 150 79.399 19.09
+# source doEverything.sh 397238 397230 151 81.078 20.09
+# source doEverything.sh 397273 397269 152 82.414 21.09
+# source doEverything.sh 397319 397316 153 83.396 22.09
+source doEverything.sh 397357 397354 154 83.396 23.09
