@@ -1,10 +1,11 @@
+ouput_eos_path=$1
 cmsDriver.py NANO \
     -s RAW2DIGI,RECO,USER:DPGAnalysis/HcalNanoAOD/hcalNano_cff.hcalNanoTask \
     --processName=PFG \
     --datatier NANOAOD \
     --eventcontent NANOAOD \
     --filein FILEIN \
-    --fileout /eos/user/d/dmroy/HCAL/MyHcalAnlzr_Nano/output_CalibRuns_Nano_RunXXXXXX_DAY.root \
+    --fileout file:${ouput_eos_path}/output_CalibRuns_Nano_RunXXXXXX_DAY.root \
     -n 5000 \
     --nThreads 4 \
     --conditions auto:run3_data_prompt \

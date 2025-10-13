@@ -5,6 +5,9 @@ import json
 import ROOT
 import argparse
 
+# The global run setup is not tested yet. The local path is working with the run files stored in eos with path + /Run{run}/* format
+# The global setup can be check in the FindDataesetToRun_old.py script
+
 EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano"
 
 def parse_arguments():
@@ -139,23 +142,48 @@ def process_single_run(myfile, run, date):
     os.system('sed -i "s/DAY/'+date+'/g" HcalNano_'+run+'.sh')
     os.system('. ./HcalNano_'+run+'.sh')
 
-def process_whole_run(largefiles, run):
+def process_whole_run(largefiles, run, islocal_path=False):
     """Process all files in a run."""
     files = [largefiles[f] for f in largefiles]
     os.system("mkdir -p WholeRunOutput_"+run)
+    print(f"DEBUG: Creating directory WholeRunOutput_{run}")
     
     for myfile in files:
-        fname = myfile.split("/")[-1].split(".")[0]
-        os.system("cp HcalNano_Template.sh HcalNano_"+run+"_"+fname+".sh")
+      fname = myfile.split("/")[-1].split(".")[0]
+      print(f"DEBUG: Processing file {myfile}, fname is {fname}")
+      os.system("cp HcalNano_Template.sh HcalNano_"+run+"_"+fname+".sh")
+      print(f"DEBUG: Copied HcalNano_Template.sh to HcalNano_{run}_{fname}.sh")
+      
+      if islocal_path:
+          filein = ("file:"+myfile).replace("/", "\/")
+      else:
         filein = myfile.replace("/eos/cms/tier0", "").replace("/", "\/")
-        os.system('sed -i "s/FILEIN/'+filein+'/g" HcalNano_'+run+'_'+fname+'.sh')
-        os.system('sed -i "s/XXXXXX/'+run+'_'+fname+'/g" HcalNano_'+run+'_'+fname+'.sh')
-        os.system('sed -i "s/_DAY//g" HcalNano_'+run+'_'+fname+'.sh')
-        os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
-        os.system('. ./HcalNano_'+run+'_'+fname+'.sh')
-        os.system('./macro_nano '+fname+' 1')
-        os.system('python3 digi_process.py '+run+' WholeRun '+fname)
-        os.system('mv *'+fname+'* WholeRunOutput_'+run)
+      print(f"DEBUG: filein for sed is {filein}")
+      
+      os.system('sed -i "s/FILEIN/'+filein+'/g" HcalNano_'+run+'_'+fname+'.sh')
+      print(f"DEBUG: Replaced FILEIN in HcalNano_{run}_{fname}.sh")
+      
+      os.system('sed -i "s/XXXXXX/'+run+'_'+fname+'/g" HcalNano_'+run+'_'+fname+'.sh')
+      print(f"DEBUG: Replaced XXXXXX in HcalNano_{run}_{fname}.sh")
+      
+      os.system('sed -i "s/_DAY//g" HcalNano_'+run+'_'+fname+'.sh')
+      print(f"DEBUG: Removed _DAY in HcalNano_{run}_{fname}.sh")
+      
+      os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
+      print(f"DEBUG: Changed -n 5000 to -n 300 in HcalNano_{run}_{fname}.sh")
+      
+     
+
+      os.system('. ./HcalNano_'+run+'_'+fname+'.sh '+ EOS_OUPUT_DIR)
+      print(f"DEBUG: Executed HcalNano_{run}_{fname}.sh with output dir {EOS_OUPUT_DIR}")
+
+      sys.exit()
+      os.system('./macro_nano '+fname+' 1')
+      print(f"DEBUG: Ran ./macro_nano {fname} 1")
+      os.system('python3 digi_process.py '+run+' WholeRun '+fname)
+      print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
+      os.system('mv *'+fname+'* WholeRunOutput_'+run)
+      print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
 
 def process_whole_fill(largefiles, run, WholeFill, date):
     """Process all files in a fill."""
@@ -211,7 +239,8 @@ def main():
     if args.local_path:
         print("Using local path ... which is hardcoded for now in the script")
         path = "/eos/cms/store/group/dpg_hcal/comm_hcal/AbortGapData_HighPURun_MD3_2025/"
-        files = get_files_from_local_path(path, whitelistrun, blacklist_file)
+        runs = whitelistrun
+        files = get_files_from_local_path(path, runs, blacklist_file)
         
     else:
         print("Using tier0 path ... which is hardcoded for now in the script")
@@ -238,14 +267,23 @@ def main():
         exit()
     else:
         print("Processing", myfile, "...")
-    
-    run = myfile.split("/")[11]+myfile.split("/")[12]
-    
+    print(f"DEBUG: myfile is {myfile} and largefiles are {largefiles}")
+    print(f"DEBUG: len(largefiles) is {len(largefiles)} myfile is {myfile} in largefiles.values() is {myfile in largefiles.values()} keys for myfile is {[k for k,v in largefiles.items() if v==myfile]}")
+    print(f"DEBUG: files len is {len(files)}")
+    print(f"DEBUG: file that is in files but not in largefiles is {[f for f in files if f not in largefiles.values()]}")
+
+    if args.local_path:
+        run = runs[0]
+    else:
+      run = myfile.split("/")[11]+myfile.split("/")[12]
+
+    print(f"DEBUG: run is {run}")
+
     # Process based on mode
     if not (WholeRun or WholeFill):
         process_single_run(myfile, run, date)
     elif WholeRun:
-        process_whole_run(largefiles, run)
+        process_whole_run(largefiles, run, islocal_path=args.local_path)
     else:  # WholeFill
         process_whole_fill(largefiles, run, WholeFill, date)
     
