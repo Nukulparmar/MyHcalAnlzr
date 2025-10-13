@@ -19,9 +19,10 @@ def parse_arguments():
     
     return args
 
-def get_files_from_local_path(path, blacklist_file):
+def get_files_from_local_path(path, runs, blacklist_file):
     """Discover files in a local path."""
-    allfiles_list = [f for f in glob.glob(path+"/*") if f.endswith(".root") and f.split("/")[-1] not in blacklist_file]
+    for run in runs:
+      allfiles_list = [f for f in glob.glob(path+f"Run{run}/*") if f.endswith(".root") and f.split("/")[-1] not in blacklist_file]
     print("There are",len(allfiles_list),"files total")
     return allfiles_list
 
@@ -205,25 +206,29 @@ def main():
         WholeRun, WholeFill = False, args.mode
     else:
         WholeRun, WholeFill = False, False
-    
+    print("run(s):", whitelistrun, "mode:", args.mode)
     # Set path
     if args.local_path:
         print("Using local path ... which is hardcoded for now in the script")
         path = "/eos/cms/store/group/dpg_hcal/comm_hcal/AbortGapData_HighPURun_MD3_2025/"
+        files = get_files_from_local_path(path, whitelistrun, blacklist_file)
+        
     else:
         print("Using tier0 path ... which is hardcoded for now in the script")
         path = "/eos/cms/tier0/store/data/Run2023C/TestEnablesEcalHcal/*/*/*"
 
-    # Get files organized by date
-    allruns_date = get_files_by_date(path, blacklist_file)
+        # Get files organized by date
+        allruns_date = get_files_by_date(path, blacklist_file)
+        
+        # Select run
+        runs = select_runs(allruns_date, day, month, whitelistrun)
+        if not runs:
+            exit()
+        
+        # Get files for selected runs
+        files = get_files_for_runs(runs, path)
     
-    # Select runs
-    runs = select_runs(allruns_date, day, month, whitelistrun)
-    if not runs:
-        exit()
-    
-    # Get files for selected runs
-    files = get_files_for_runs(runs, path)
+    # print("DEBUG: There are",len(files),"files for the selected runs and the files are - ",files)
     
     # Select file for processing
     myfile, largefiles = select_file_for_processing(files, whitelist_file, WholeRun, WholeFill)
