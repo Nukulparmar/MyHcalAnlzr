@@ -7,9 +7,13 @@
 import ROOT
 import os, sys
 from array import array
+import PyROOT
 
 # Generally, old measurement have smaller weight
 fittingweight = 0.10 # Smaller values makes weight more equal for all measurements
+combined_runs = [390962, 391004, 391282, 391389, 391425, 391494, 391534, 391594, 391611, 391718, 391748, 391812, 391833, 391899, 391927, 391959, 392010, 392087, 392127, 392150, 392215, 392231, 392265, 392311, 392372, 392498, 392535, 392578, 392627, 392698, 392723, 392762, 392802, 392934, 392967, 393008, 393035, 393078, 393122, 393161, 393194, 393249, 393294, 393338, 393361, 393391, 393437, 393475, 393522, 393540, 393558, 393783, 393841, 393876, 393967, 393994, 394035, 394111, 394165, 394201, 394224, 394255, 394289, 394374, 394440, 394456, 394479, 394519, 394554, 394609, 394651, 394690, 394740, 394766, 394801, 394876, 394929, 394981, 395007, 395051, 395090, 395130, 395158, 395215, 395278, 395319, 395362, 395403, 395456, 395539, 395586, 395634, 395679, 395782, 395830, 395908, 395936, 395957, 396000, 396037, 396068, 396114, 396143, 396170, 396203, 396236, 396276, 396293, 396354, 396384, 396412, 396432, 396506, 396533, 396590, 396652, 396690, 396716, 396839, 396905, 396977, 397010, 397044, 397068, 397113, 397202, 397238, 397273, 397319, 397357]
+
+# file = ROOT.TFile.Open("ALlhist.root", "RECREATE")
 
 def ReadSaveFile():
   with open('SaveFile.txt') as savefile:
@@ -233,6 +237,9 @@ for subdet in ["HB", "HE", "HF", "HO"]:
 c = []
 legend = []
 
+# Open a ROOT file to save TGraphs
+outfile = ROOT.TFile(output + "PedestalTrends.root", "RECREATE")
+
 ##### Draw PED trends
 for title in grdict:
   for unit in ["ADC", "FC"]:
@@ -354,6 +361,8 @@ for title in grdict:
         elif "HO2" in part: sizename = "2"
       label = subdet + " " + sizename + ""
       legend[-1].AddEntry(gr[part][meanrms], label, "pl")
+      # Write the TGraph to the output file
+      gr[part][meanrms].Write(title.replace(" ", "_")+"_"+part+"_"+unit)
     # Vertical lines at 1st of every month
     if dowhat=="daysince":
       monthlines = []
@@ -367,7 +376,13 @@ for title in grdict:
     c[-1].Draw()
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".png")
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".pdf")
+    c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".root")
 
+  outfile.Close()
+# for par in parts:
+#   if gr[par][meanrms] is not None:
+#     gr[par][meanrms].Write(title.replace(" ", "_")+"_"+unit)
+# file.Close()  
 # if fin:
 ##### Prepare runs for histograms
   if runstoplot!=[]:
@@ -522,6 +537,7 @@ for title in grdict:
               h[unit+subdet][size][alpha][run].Draw()
             else:
               h[unit+subdet][size][alpha][run].Draw("same")
+              h[unit+subdet][size][alpha][run].Write()
           legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
           legend[-1].SetNColumns(2)
           for run in runs:
@@ -531,7 +547,7 @@ for title in grdict:
       c[-1].Draw()
       c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".png")
       c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".pdf")
-
+      c[-1].SaveAs(output+"PedestalPerSize_"+alpha+"_"+unit+".root")
       c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
       c[-1].Divide(2,2)
 
@@ -560,6 +576,7 @@ for title in grdict:
               hdepth[unit+subdet][depth][alpha][run].Draw()
             else:
               hdepth[unit+subdet][depth][alpha][run].Draw("same")
+              hdepth[unit+subdet][depth][alpha][run].Write()
           legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
           legend[-1].SetNColumns(2)
           for run in runs:
@@ -600,6 +617,7 @@ for title in grdict:
         c[-1].Draw()
         c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".png")
         c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".pdf")
+        c[-1].SaveAs(output+"PedestalPerPhi_"+alpha+"_"+subdet+"_"+unit+".root")
 
 # Extrapolation plots (makes more sense for lumi)
 if dowhat=="lumi":
@@ -659,6 +677,7 @@ if dowhat=="lumi":
     exhists[-1].Draw()
     c[-1].Draw()
     fit.Draw("SAME")
+    fit.Write()
     legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
     legend[-1].AddEntry(exhists[-1],"#mu_{#mu} + 2*#mu_{#sigma} + 2*#sigma_{#mu} + 2*#sigma_{#sigma}","pl")
     legend[-1].AddEntry(fit,"Linear fit (weighted towards recent data)","l")
@@ -678,6 +697,7 @@ if dowhat=="lumi":
 
     c[-1].SaveAs(output+"Extrapolation_"+trend+".png")
     c[-1].SaveAs(output+"Extrapolation_"+trend+".pdf")
+    c[-1].SaveAs(output+"Extrapolation_"+trend+".root")
     del exhistserror
     if "ADC" in trend: del fit
 
@@ -695,6 +715,7 @@ if dowhat=="lumi":
       exhists[-2].Draw() # ADC
       c[-1].Draw()
       fit2adc.Draw("SAME")
+      fit2adc.Write()
       legend.append(ROOT.TLegend(0.1,0.8,0.9,0.9))
       legend[-1].AddEntry(exhists[-1],"#mu_{#mu} + 2*#mu_{#sigma} + 2*#sigma_{#mu} + 2*#sigma_{#sigma}","pl")
       legend[-1].AddEntry(fit2adc,"Linear fit (weighted towards recent data)","l")
@@ -713,6 +734,8 @@ if dowhat=="lumi":
 
       c[-1].SaveAs(output+"ExtrapolationFC2ADC_"+trend+".png")
       c[-1].SaveAs(output+"ExtrapolationFC2ADC_"+trend+".pdf")
+      c[-1].SaveAs(output+"ExtrapolationFC2ADC_"+trend+".root")
+      # file.Close()
       del fit
       del fit2adc
 
