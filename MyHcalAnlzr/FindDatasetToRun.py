@@ -26,7 +26,10 @@ def parse_arguments():
     parser.add_argument("--dry", help="Dry run for condor submission (only for WholeRun mode)", action="store_true", default=False)
     
     args = parser.parse_args()
-    
+    # Ensure submit_jobs and after_nano are not both True
+    if args.submit_jobs and args.after_nano:
+        print("Error: --submit_jobs and --after_nano cannot be used together.")
+        sys.exit(1)
     return args
 
 def get_files_from_local_path(path, runs, blacklist_file):
