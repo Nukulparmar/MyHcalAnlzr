@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
   // New: Get input based on date in name, then find run number
   string fileName;
-  for (const auto & entry_ : filesystem::directory_iterator("/eos/user/d/dmroy/HCAL/MyHcalAnlzr_Nano/")){
+  for (const auto & entry_ : filesystem::directory_iterator("/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano/")){
     fileName = entry_.path().filename().string();
     if (fileName.find(floatday) != string::npos){
       break;
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
   // There is a DISGUSTING amount of hardcoding here; unfortunately I wasn't able to loop over subdets or time slices.
 
-  TFile *f = new TFile(("/eos/user/d/dmroy/HCAL/MyHcalAnlzr_Nano/"+fileName).c_str(), "read");
+  TFile *f = new TFile(("/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano/"+fileName).c_str(), "read");
   TNtuple* qiedigi = (TNtuple*)f->Get("Events");
   int ntot = qiedigi->GetEntries();
   cout << "Reading in input file, total " << ntot << " Entries." << endl;
