@@ -268,8 +268,7 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
             print(f"DEBUG: Processing file {myfile}, fname is {fname}")
             os.system('./macro_nano '+fname+' 1')
             print(f"DEBUG: Ran ./macro_nano {fname} 1")
-        
-            sys.exit()
+
             os.system('python3 digi_process.py '+run+' WholeRun '+fname)
             print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
 
