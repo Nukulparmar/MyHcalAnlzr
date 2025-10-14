@@ -11,7 +11,8 @@ import argparse
 EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano" # The output directory for the nano tuples
 JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
 CMSSW_VERSION= "CMSSW_15_0_6"
-ifDebug = True  # If True, print debug information
+TOTAL_EVENTS = -1  # Total events to process per job in condor submission
+ifDebug = True  # If True, print debug information # TODO : print only when needed
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -135,7 +136,8 @@ def select_file_for_processing(files, whitelist_file, WholeRun, WholeFill):
         # Get all large files, sort by time, then process the median file
         for f in files:
             fs = os.path.getsize(f)
-            if fs > 3758096384:  # 3.5G
+            # if fs > 3758096384:  # 3.5G
+            if fs > 1000000000:  # 1G
                 largefiles[os.path.getmtime(f)] = f
         if largefiles != {}:
             myfile = largefiles[sorted(list(largefiles.keys()))[int(len(largefiles)/2.0)]]
@@ -163,7 +165,7 @@ def submit_condor_job(input_files, run, total_events= 300, isdry=False):
     condor_jdl_file = f"condor_submit_{run}.jdl"
     with open(condor_jdl_file, "w") as f:
         f.write("universe = vanilla\n")
-        f.write("+JobFlavour = espresso\n")
+        # f.write("+JobFlavour = espresso\n")
         f.write(f"executable = {JOB_SCRIPT}\n")
         # f.write("request_cpus = 4\n")
         # f.write("request_memory = 4 GB\n")
@@ -178,20 +180,22 @@ def submit_condor_job(input_files, run, total_events= 300, isdry=False):
         f.write("\nqueue args, out, err, log from (\n")
 
         for i,input_file in enumerate(input_files):
+            file=input_file.split("/")[-1].split(".")[0]
             if input_file.startswith("/eos/cms/tier0"):
                 xrootd_path = f"root://xrootd-cms.infn.it{input_file}"
             elif input_file.startswith("/eos/cms/store/group/dpg_hcal"):
-                xrootd_path = f"root://eosuser.cern.ch{input_file}"
+                # xrootd_path = f"root://eosuser.cern.ch{input_file}"
+                xrootd_path = f"file:{input_file}"
             else:
                 xrootd_path = input_file
             input_file_name = input_file.split("/")[-1].split(".root")[0]
             out_file = f"condor_out_{run}/output_{run}_{input_file_name}.out"
             err_file = f"condor_out_{run}/error_{run}_{input_file_name}.err"
             log_file = f"condor_out_{run}/log_{run}_{input_file_name}.log"
-            args = f"{CMSSW_VERSION};{xrootd_path};{input_file_name};{EOS_OUPUT_DIR};{total_events}"
+            args = f"{CMSSW_VERSION};{xrootd_path};{input_file_name};{EOS_OUPUT_DIR};{total_events};{run};{file}"
             line_end = "," if i < len(input_files)-1 else ""
             f.write(f'"{args}", {out_file}, {err_file}, {log_file}{line_end}\n')
-            break
+            
         f.write(")\n")
     
     print(f"Condor submission file created {condor_jdl_file} with {len(input_files)} jobs.")
@@ -226,7 +230,7 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
     
     if submit_jobs:
         print(f"DEBUG: Submitting condor jobs for run {run}")
-        submit_condor_job(files, run, total_events=20, isdry=isdry)
+        submit_condor_job(files, run, total_events=TOTAL_EVENTS, isdry=isdry)
         sys.exit()
     
     else:
@@ -364,7 +368,7 @@ def main():
         exit()
     else:
         print("Processing", myfile, "...")
-    print(f"DEBUG: myfile is {myfile} and largefiles are {largefiles}")
+    # print(f"DEBUG: myfile is {myfile} and largefiles are {largefiles}")
     print(f"DEBUG: len(largefiles) is {len(largefiles)} myfile is {myfile} in largefiles.values() is {myfile in largefiles.values()} keys for myfile is {[k for k,v in largefiles.items() if v==myfile]}")
     print(f"DEBUG: files len is {len(files)}")
     print(f"DEBUG: file that is in files but not in largefiles is {[f for f in files if f not in largefiles.values()]}")
