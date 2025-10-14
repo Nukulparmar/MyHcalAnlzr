@@ -8,7 +8,8 @@ import argparse
 # The global run setup is not tested yet. The local path is working with the run files stored in eos with path + /Run{run}/* format
 # The global setup can be check in the FindDataesetToRun_old.py script
 
-EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano"
+EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano" # The output directory for the nano tuples
+JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -17,6 +18,8 @@ def parse_arguments():
     parser.add_argument("-r", "--run", dest="whitelistrun", help="Whitelist run(s), space separated", default="")
     parser.add_argument("-m", "--mode", choices=["WholeRun", "WholeFill", ""], help="Mode: WholeRun or WholeFill", default="")
     parser.add_argument("--local_path", help="Use local path instead of eos", action="store_true", default=False)
+    parser.add_argument("--submit_jobs", help="Submit jobs to condor (only for WholeRun mode)", action="store_true", default=False)
+    parser.add_argument("--dry", help="Dry run for condor submission (only for WholeRun mode)", action="store_true", default=False)
     
     args = parser.parse_args()
     
@@ -133,6 +136,7 @@ def select_file_for_processing(files, whitelist_file, WholeRun, WholeFill):
     
     return myfile, largefiles
 
+
 def process_single_run(myfile, run, date):
     """Process a single run."""
     os.system("cp HcalNano_Template.sh HcalNano_"+run+".sh")
@@ -142,8 +146,63 @@ def process_single_run(myfile, run, date):
     os.system('sed -i "s/DAY/'+date+'/g" HcalNano_'+run+'.sh')
     os.system('. ./HcalNano_'+run+'.sh')
 
-def process_whole_run(largefiles, run, islocal_path=False):
+
+def submit_condor_job(input_files, run, cmssw_version= "CMSSW_15_1_0", total_events= 300, isdry=False):
+    """Submit jobs to condor for processing HCAL nano ntuples using JOB_SCRIPT. 
+       arguments: inputfiles (list of input files), run (run number), cmssw_version (CMSSW version to use),
+                  total_events (total number of events to process per job), isdry (if True, does not submit jobs)
+    """
+    condor_out = "condor_out_"+run
+    os.mkdir(condor_out, exist_ok=True)
+    condor_jdl_file = f"condor_submit_{run}.jdl"
+    with open(condor_jdl_file, "w") as f:
+        f.write("universe = vanilla\n")
+        f.write(f"executable = {JOB_SCRIPT}\n")
+        f.write("request_cpus = 4\n")
+        f.write("request_memory = 4 GB\n")
+        # f.write("request_disk = 2 GB\n")
+        f.write("should_transfer_files = YES\n")
+        f.write("when_to_transfer_output = ON_EXIT\n")
+        f.write("Arguments = $(args)\n")
+        f.write("output = $(out)\n")
+        f.write("error = $(err)\n")
+        f.write("log = $(log)\n")
+        f.write("\nqueue args, out, err, log from (\n")
+
+        for input_file in input_files:
+            if input_file.startswith("/eos/cms/tier0"):
+                xrootd_path = f"root://xrootd-cms.infn.it{input_file}"
+            elif input_file.startswith("/eos/user"):
+                xrootd_path = f"root://eosuser.cern.ch{input_file}"
+            else:
+                xrootd_path = input_file
+            input_file_name = inputfile.split("/")[-1].split(".root")[0]
+            out_file = f"condor_out_{run}/output_{run}_{input_file_name}.out"
+            err_file = f"condor_out_{run}/error_{run}_{input_file_name}.err"
+            log_file = f"condor_out_{run}/log_{run}_{input_file_name}.log"
+            args = f"{cmssw_version};{xrootd_path};{input_file_name};{EOS_OUPUT_DIR};{total_events}"
+            f.write(f'"{args}" "{out_file}" "{err_file}" "{log_file}"\n')
+
+        f.write(")\n")
+    
+    print(f"Condor submission file created {condor_jdl_file} with {len(input_files)} jobs.")
+
+    #Submit jobs 
+    try:
+        if not isdry:
+            os.system(f"condor_submit {condor_jdl_file}")
+            print(f"Submitted condor jobs for run {run}.")
+        else:
+            print(f"Dry run: condor_submit {condor_jdl_file} (not actually submitted)")
+    except Exception as e:
+        print(f"Error submitting condor jobs: {e}")
+        
+
+
+
+def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False):
     """Process all files in a run."""
+
     files = [largefiles[f] for f in largefiles]
     os.system("mkdir -p WholeRunOutput_"+run)
     print(f"DEBUG: Creating directory WholeRunOutput_{run}")
@@ -172,18 +231,25 @@ def process_whole_run(largefiles, run, islocal_path=False):
       os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
       print(f"DEBUG: Changed -n 5000 to -n 300 in HcalNano_{run}_{fname}.sh")
       
-     
-
       os.system('. ./HcalNano_'+run+'_'+fname+'.sh '+ EOS_OUPUT_DIR)
       print(f"DEBUG: Executed HcalNano_{run}_{fname}.sh with output dir {EOS_OUPUT_DIR}")
 
-      sys.exit()
       os.system('./macro_nano '+fname+' 1')
       print(f"DEBUG: Ran ./macro_nano {fname} 1")
+   
+      
       os.system('python3 digi_process.py '+run+' WholeRun '+fname)
       print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
+
+      os.system('mv hist_CalibOutput_hadd.root hist_CalibOutput_hadd.root_old')
+
+      os.system('hadd -f hist_CalibOutput_hadd.root hist_CalibOutputSummary_run'+run+'*.root')
+      print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd.root")
+      
       os.system('mv *'+fname+'* WholeRunOutput_'+run)
       print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
+
+      sys.exit()
 
 def process_whole_fill(largefiles, run, WholeFill, date):
     """Process all files in a fill."""
