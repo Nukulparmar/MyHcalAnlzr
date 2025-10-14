@@ -11,7 +11,6 @@ import argparse
 EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano" # The output directory for the nano tuples
 JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
 CMSSW_VERSION= "CMSSW_15_0_6"
-SCHEDD_NAME = "bigbird21.cern.ch"
 ifDebug = True  # If True, print debug information
 
 def parse_arguments():
@@ -200,8 +199,8 @@ def submit_condor_job(input_files, run, total_events= 300, isdry=False):
     #Submit jobs 
     try:
         if not isdry:
-            os.system(f"condor_submit {condor_jdl_file} -name {SCHEDD_NAME}")
-            print(f"Submitted condor jobs for run {run} on schedd name - {SCHEDD_NAME}.")
+            os.system(f"condor_submit {condor_jdl_file}")
+            print(f"Submitted condor jobs for run {run}.")
         else:
             print(f"Dry run: condor_submit {condor_jdl_file} (not actually submitted)")
     except Exception as e:
@@ -253,12 +252,12 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
             os.system('sed -i "s/_DAY//g" HcalNano_'+run+'_'+fname+'.sh')
             print(f"DEBUG: Removed _DAY in HcalNano_{run}_{fname}.sh")
             
-            os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
-            print(f"DEBUG: Changed -n 5000 to -n 300 in HcalNano_{run}_{fname}.sh")
+            os.system('sed -i "s/-n 5000/-n 10/g" HcalNano_'+run+"_"+fname+'.sh')
+            print(f"DEBUG: Changed -n 5000 to -n 10 in HcalNano_{run}_{fname}.sh")
             
             os.system('. ./HcalNano_'+run+'_'+fname+'.sh '+ EOS_OUPUT_DIR)
             print(f"DEBUG: Executed HcalNano_{run}_{fname}.sh with output dir {EOS_OUPUT_DIR}")
-        
+            # sys.exit()
     if after_nano:
         # After making all nano tuples, run the digi_process.py script to make histograms
         print("DEBUG: checking nano file creation")
@@ -272,13 +271,14 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
             os.system('python3 digi_process.py '+run+' WholeRun '+fname)
             print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
 
-            os.system('mv hist_CalibOutput_hadd.root hist_CalibOutput_hadd.root_old')
+            os.system(f'mv hist_CalibOutput_hadd_{run}.root hist_CalibOutput_hadd_{run}.root_old')
 
-            os.system('hadd -f hist_CalibOutput_hadd.root hist_CalibOutputSummary_run'+run+'*.root')
-            print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd.root")
+            os.system(f'hadd -f hist_CalibOutput_hadd_{run}.root hist_CalibOutputSummary_run'+run+'*.root')
+            print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd_{run}.root")
             
             os.system('mv *'+fname+'* WholeRunOutput_'+run)
             print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
+            # sys.exit()
             
             
     
