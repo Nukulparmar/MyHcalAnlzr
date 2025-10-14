@@ -10,6 +10,9 @@ import argparse
 
 EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano" # The output directory for the nano tuples
 JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
+CMSSW_VERSION= "CMSSW_15_0_6"
+SCHEDD_NAME = "bigbird21.cern.ch"
+ifDebug = True  # If True, print debug information
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -19,6 +22,7 @@ def parse_arguments():
     parser.add_argument("-m", "--mode", choices=["WholeRun", "WholeFill", ""], help="Mode: WholeRun or WholeFill", default="")
     parser.add_argument("--local_path", help="Use local path instead of eos", action="store_true", default=False)
     parser.add_argument("--submit_jobs", help="Submit jobs to condor (only for WholeRun mode)", action="store_true", default=False)
+    parser.add_argument("--after_nano", help="Run digi_process.py after making all nano tuples (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--dry", help="Dry run for condor submission (only for WholeRun mode)", action="store_true", default=False)
     
     args = parser.parse_args()
@@ -147,20 +151,22 @@ def process_single_run(myfile, run, date):
     os.system('. ./HcalNano_'+run+'.sh')
 
 
-def submit_condor_job(input_files, run, cmssw_version= "CMSSW_15_1_0", total_events= 300, isdry=False):
+def submit_condor_job(input_files, run, total_events= 300, isdry=False):
     """Submit jobs to condor for processing HCAL nano ntuples using JOB_SCRIPT. 
        arguments: inputfiles (list of input files), run (run number), cmssw_version (CMSSW version to use),
                   total_events (total number of events to process per job), isdry (if True, does not submit jobs)
     """
     condor_out = "condor_out_"+run
-    os.mkdir(condor_out, exist_ok=True)
+    os.makedirs(condor_out, exist_ok=True)
     condor_jdl_file = f"condor_submit_{run}.jdl"
     with open(condor_jdl_file, "w") as f:
         f.write("universe = vanilla\n")
+        f.write("+JobFlavour = espresso\n")
         f.write(f"executable = {JOB_SCRIPT}\n")
-        f.write("request_cpus = 4\n")
-        f.write("request_memory = 4 GB\n")
-        # f.write("request_disk = 2 GB\n")
+        # f.write("request_cpus = 4\n")
+        # f.write("request_memory = 4 GB\n")
+        # # f.write("request_disk = 2 GB\n")
+        # f.write("+MaxRuntime = 30000\n")
         f.write("should_transfer_files = YES\n")
         f.write("when_to_transfer_output = ON_EXIT\n")
         f.write("Arguments = $(args)\n")
@@ -169,20 +175,21 @@ def submit_condor_job(input_files, run, cmssw_version= "CMSSW_15_1_0", total_eve
         f.write("log = $(log)\n")
         f.write("\nqueue args, out, err, log from (\n")
 
-        for input_file in input_files:
+        for i,input_file in enumerate(input_files):
             if input_file.startswith("/eos/cms/tier0"):
                 xrootd_path = f"root://xrootd-cms.infn.it{input_file}"
-            elif input_file.startswith("/eos/user"):
+            elif input_file.startswith("/eos/cms/store/group/dpg_hcal"):
                 xrootd_path = f"root://eosuser.cern.ch{input_file}"
             else:
                 xrootd_path = input_file
-            input_file_name = inputfile.split("/")[-1].split(".root")[0]
+            input_file_name = input_file.split("/")[-1].split(".root")[0]
             out_file = f"condor_out_{run}/output_{run}_{input_file_name}.out"
             err_file = f"condor_out_{run}/error_{run}_{input_file_name}.err"
             log_file = f"condor_out_{run}/log_{run}_{input_file_name}.log"
-            args = f"{cmssw_version};{xrootd_path};{input_file_name};{EOS_OUPUT_DIR};{total_events}"
-            f.write(f'"{args}" "{out_file}" "{err_file}" "{log_file}"\n')
-
+            args = f"{CMSSW_VERSION};{xrootd_path};{input_file_name};{EOS_OUPUT_DIR};{total_events}"
+            line_end = "," if i < len(input_files)-1 else ""
+            f.write(f'"{args}", {out_file}, {err_file}, {log_file}{line_end}\n')
+            break
         f.write(")\n")
     
     print(f"Condor submission file created {condor_jdl_file} with {len(input_files)} jobs.")
@@ -190,67 +197,89 @@ def submit_condor_job(input_files, run, cmssw_version= "CMSSW_15_1_0", total_eve
     #Submit jobs 
     try:
         if not isdry:
-            os.system(f"condor_submit {condor_jdl_file}")
-            print(f"Submitted condor jobs for run {run}.")
+            os.system(f"condor_submit {condor_jdl_file} -name {SCHEDD_NAME}")
+            print(f"Submitted condor jobs for run {run} on schedd name - {SCHEDD_NAME}.")
         else:
             print(f"Dry run: condor_submit {condor_jdl_file} (not actually submitted)")
     except Exception as e:
         print(f"Error submitting condor jobs: {e}")
-        
+
+def check_nano_file(input_files,run):
+    """Check if the nano files are created successfully."""
+    for input_file in input_files:
+        input_file_name = input_file.split("/")[-1].split(".root")[0]
+        nano_file = f"{EOS_OUPUT_DIR}/output_CalibRuns_Nano_Run{run}_{input_file_name}.root"
+        if not os.path.isfile(nano_file):
+            print(f"Nano file {nano_file} not found!")
+        else:
+            print(f"Nano file {nano_file} exists.")
 
 
-
-def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False):
+def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, isdry=False, after_nano=False):
     """Process all files in a run."""
 
     files = [largefiles[f] for f in largefiles]
     os.system("mkdir -p WholeRunOutput_"+run)
     print(f"DEBUG: Creating directory WholeRunOutput_{run}")
     
-    for myfile in files:
-      fname = myfile.split("/")[-1].split(".")[0]
-      print(f"DEBUG: Processing file {myfile}, fname is {fname}")
-      os.system("cp HcalNano_Template.sh HcalNano_"+run+"_"+fname+".sh")
-      print(f"DEBUG: Copied HcalNano_Template.sh to HcalNano_{run}_{fname}.sh")
-      
-      if islocal_path:
-          filein = ("file:"+myfile).replace("/", "\/")
-      else:
-        filein = myfile.replace("/eos/cms/tier0", "").replace("/", "\/")
-      print(f"DEBUG: filein for sed is {filein}")
-      
-      os.system('sed -i "s/FILEIN/'+filein+'/g" HcalNano_'+run+'_'+fname+'.sh')
-      print(f"DEBUG: Replaced FILEIN in HcalNano_{run}_{fname}.sh")
-      
-      os.system('sed -i "s/XXXXXX/'+run+'_'+fname+'/g" HcalNano_'+run+'_'+fname+'.sh')
-      print(f"DEBUG: Replaced XXXXXX in HcalNano_{run}_{fname}.sh")
-      
-      os.system('sed -i "s/_DAY//g" HcalNano_'+run+'_'+fname+'.sh')
-      print(f"DEBUG: Removed _DAY in HcalNano_{run}_{fname}.sh")
-      
-      os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
-      print(f"DEBUG: Changed -n 5000 to -n 300 in HcalNano_{run}_{fname}.sh")
-      
-      os.system('. ./HcalNano_'+run+'_'+fname+'.sh '+ EOS_OUPUT_DIR)
-      print(f"DEBUG: Executed HcalNano_{run}_{fname}.sh with output dir {EOS_OUPUT_DIR}")
+    if submit_jobs:
+        print(f"DEBUG: Submitting condor jobs for run {run}")
+        submit_condor_job(files, run, total_events=20, isdry=isdry)
+        sys.exit()
+    
+    else:
+        print(f"DEBUG: Running locally for run {run}")
+        for myfile in files:
+            fname = myfile.split("/")[-1].split(".")[0]
+            print(f"DEBUG: Processing file {myfile}, fname is {fname}")
+            os.system("cp HcalNano_Template.sh HcalNano_"+run+"_"+fname+".sh")
+            print(f"DEBUG: Copied HcalNano_Template.sh to HcalNano_{run}_{fname}.sh")
+            
+            if islocal_path:
+                filein = ("file:"+myfile).replace("/", "\/")
+            else:
+                filein = myfile.replace("/eos/cms/tier0", "").replace("/", "\/")
+            print(f"DEBUG: filein for sed is {filein}")
+            
+            os.system('sed -i "s/FILEIN/'+filein+'/g" HcalNano_'+run+'_'+fname+'.sh')
+            print(f"DEBUG: Replaced FILEIN in HcalNano_{run}_{fname}.sh")
+            
+            os.system('sed -i "s/XXXXXX/'+run+'_'+fname+'/g" HcalNano_'+run+'_'+fname+'.sh')
+            print(f"DEBUG: Replaced XXXXXX in HcalNano_{run}_{fname}.sh")
+            
+            os.system('sed -i "s/_DAY//g" HcalNano_'+run+'_'+fname+'.sh')
+            print(f"DEBUG: Removed _DAY in HcalNano_{run}_{fname}.sh")
+            
+            os.system('sed -i "s/-n 5000/-n 300/g" HcalNano_'+run+"_"+fname+'.sh')
+            print(f"DEBUG: Changed -n 5000 to -n 300 in HcalNano_{run}_{fname}.sh")
+            
+            os.system('. ./HcalNano_'+run+'_'+fname+'.sh '+ EOS_OUPUT_DIR)
+            print(f"DEBUG: Executed HcalNano_{run}_{fname}.sh with output dir {EOS_OUPUT_DIR}")
+        
+    if after_nano:
+        # After making all nano tuples, run the digi_process.py script to make histograms
+        print("DEBUG: checking nano file creation")
+        check_nano_file(files, run)
+        for myfile in files:
+            fname = myfile.split("/")[-1].split(".")[0]
+            print(f"DEBUG: Processing file {myfile}, fname is {fname}")
+            os.system('./macro_nano '+fname+' 1')
+            print(f"DEBUG: Ran ./macro_nano {fname} 1")
+        
+            sys.exit()
+            os.system('python3 digi_process.py '+run+' WholeRun '+fname)
+            print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
 
-      os.system('./macro_nano '+fname+' 1')
-      print(f"DEBUG: Ran ./macro_nano {fname} 1")
-   
-      
-      os.system('python3 digi_process.py '+run+' WholeRun '+fname)
-      print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
+            os.system('mv hist_CalibOutput_hadd.root hist_CalibOutput_hadd.root_old')
 
-      os.system('mv hist_CalibOutput_hadd.root hist_CalibOutput_hadd.root_old')
-
-      os.system('hadd -f hist_CalibOutput_hadd.root hist_CalibOutputSummary_run'+run+'*.root')
-      print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd.root")
-      
-      os.system('mv *'+fname+'* WholeRunOutput_'+run)
-      print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
-
-      sys.exit()
-
+            os.system('hadd -f hist_CalibOutput_hadd.root hist_CalibOutputSummary_run'+run+'*.root')
+            print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd.root")
+            
+            os.system('mv *'+fname+'* WholeRunOutput_'+run)
+            print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
+            
+            
+    
 def process_whole_fill(largefiles, run, WholeFill, date):
     """Process all files in a fill."""
     files = [largefiles[f] for f in largefiles]
@@ -349,7 +378,7 @@ def main():
     if not (WholeRun or WholeFill):
         process_single_run(myfile, run, date)
     elif WholeRun:
-        process_whole_run(largefiles, run, islocal_path=args.local_path)
+        process_whole_run(largefiles, run, islocal_path=args.local_path, submit_jobs=args.submit_jobs, isdry=args.dry, after_nano=args.after_nano)
     else:  # WholeFill
         process_whole_fill(largefiles, run, WholeFill, date)
     
