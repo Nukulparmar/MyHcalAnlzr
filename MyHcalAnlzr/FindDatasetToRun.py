@@ -9,9 +9,10 @@ import argparse
 # The global run setup is not tested yet. The local path is working with the run files stored in eos with path + /Run{run}/* format
 # The global setup can be check in the FindDataesetToRun_old.py script
 
-EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_try" # The output directory for the nano tuples
+EOS_OUPUT_DIR = "/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano" # The output directory for the nano tuples
 JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
 CMSSW_VERSION= "CMSSW_15_0_6"
+# TMP_PATH = "/tmp/nparmar/"  
 TOTAL_EVENTS = -1  # Total events to process per job in condor submission
 ifDebug = True  # If True, print debug information # TODO : print only when needed
 
@@ -28,7 +29,7 @@ def parse_arguments():
     parser.add_argument("--after_nano", help="Run digi_process.py after making all nano tuples (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--dry", help="Dry run for condor submission (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--make_small", help="Make the input file smaller by removing unnecessary branches and events", action="store_true", default=False)
-
+    parser.add_argument("--do_digi_process", help="Run digi_process.py script after making nano tuples", action="store_true", default=False)
     args = parser.parse_args()
     # Ensure submit_jobs and after_nano are not both True
     if args.submit_jobs and args.run_locally:
@@ -39,27 +40,34 @@ def parse_arguments():
 def MakeSmall(path):
     patht1 = path.replace(".root", "_temp.root")
     patht2 = path.replace(".root", "_temp2.root")
+    print(f"path: {path}, patht1: {patht1}, patht2: {patht2}")
+    
     try:
         tries = 0
         while tries < 10:
-        # Remove HLT branches and filter non-eventtype 1 events
-        #os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT_*" '+path+':Events '+patht1)
-        os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT*,*RecHit*,DigiHF_ok*,DigiHO_er*,DigiHO_dv*,*Error,*fiber*,*flags,*pedestalfc*,*subdet,*soi,*tdc*,*valid" '+path+':Events '+patht1)
-        # Re-compress
-        success = os.system('python3 haddnano.py '+patht2+' '+patht1)
-        os.system('rm '+patht1)
-        if success==0:
-            break
-        else:
-            os.system('rm '+patht2)
-        tries += 1
+            # Remove HLT branches and filter non-eventtype 1 events
+            #os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT_*" '+path+':Events '+patht1)
+            print("running rooteventselector ...")
+            os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT*,*RecHit*,DigiHF_ok*,DigiHO_er*,DigiHO_dv*,*Error,*fiber*,*flags,*pedestalfc*,*subdet,*soi,*tdc*,*valid" '+path+':Events '+patht1)
+            # Re-compress
+            print("running haddnano ...")
+            success = os.system('python3 haddnano.py '+patht2+' '+patht1)
+            print(f"Success: {success}")
+            os.system('rm '+patht1)
+            if success==0:
+                break
+            else:
+                os.system('rm '+patht2)
+            tries += 1
     except OSError: # File not found
         exit()
     except KeyboardInterrupt:
         exit()
+    
     os.system('mv '+path+' '+path.replace(".root", "_FULL.root"))
     os.system('mv '+patht2+' '+path)
-
+    print(f"Finished making file smaller: {path}")
+    
 def get_files_from_local_path(path, runs, blacklist_file):
     """Discover files in a local path."""
     for run in runs:
@@ -157,12 +165,15 @@ def select_file_for_processing(files, whitelist_file, WholeRun, WholeFill):
     """Select the appropriate file for processing."""
     myfile = ""
     largefiles = {}
-    
+    print(f"DEBUG: whitelist_file is {whitelist_file}")
     if any([fstr in f for fstr in whitelist_file for f in files]) and not (WholeRun or WholeFill): 
         myfile = [f for fstr in whitelist_file for f in files if fstr in f][0]
+        
     else:
         # Get all large files, sort by time, then process the median file
         for f in files:
+            # if whitelist_file and not any([fstr in f for fstr in whitelist_file]): # Skip if not in whitelist
+            #     continue
             fs = os.path.getsize(f)
             # if fs > 3758096384:  # 3.5G
             if fs > 1000000000:  # 1G
@@ -194,13 +205,12 @@ def submit_condor_job(job_content, job_script, jdl_file_name, isdry=False):
         f.write("universe = vanilla\n")
         # f.write("+JobFlavour = espresso\n")
         f.write(f"executable = {job_script}\n")
-        # f.write("request_cpus = 4\n")
+        f.write("request_cpus = 4\n")
         # f.write("request_memory = 4 GB\n")
         # # f.write("request_disk = 2 GB\n")
-        f.write("+MaxRuntime = 30000\n")
+        f.write("+MaxRuntime = 40000\n")
         f.write("should_transfer_files = YES\n")
         f.write("when_to_transfer_output = ON_EXIT\n")
-        f.write("RequestCpus = 4\n")
         f.write("Arguments = $(args)\n")
         f.write("output = $(out)\n")
         f.write("error = $(err)\n")
@@ -248,6 +258,7 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
         condor_out = "condor_out_"+run
         os.makedirs(condor_out, exist_ok=True)
         jdl_file_name = f"condor_{run}_more_cpus.jdl"
+        homedir = os.getcwd()
         job_content = []
         for i, file in enumerate(files):
             fname = file.split("/")[-1].split(".")[0]
@@ -261,9 +272,10 @@ def process_whole_run(largefiles, run, islocal_path=False, submit_jobs=False, is
             outfile = f"condor_out_{run}/output_{run}_{fname}.stdout"
             errfile = f"condor_out_{run}/error_{run}_{fname}.stderr"
             logfile = f"condor_out_{run}/log_{run}_{fname}.log"
-            args = f"{CMSSW_VERSION};{xrootd_path};{file};{EOS_OUPUT_DIR};{TOTAL_EVENTS};{run};{fname}"
+            args = f"{CMSSW_VERSION};{xrootd_path};{file};{EOS_OUPUT_DIR};{TOTAL_EVENTS};{run};{fname};{homedir}"
             line_end = "," if i < len(files)-1 else ""
             job_content.append(f'"{args}", {outfile}, {errfile}, {logfile}{line_end}\n')
+            # break # For testing, process only one file. Remove this line for full processing.
         submit_condor_job(job_content, job_script=JOB_SCRIPT, jdl_file_name=jdl_file_name, isdry=isdry)
         print(f"Submitted condor jobs for run {run}.")
         sys.exit()
@@ -314,17 +326,6 @@ def process_after_nano_for_WholeRun(largefiles, run, run_locally=False, isdry=Fa
             print(f"DEBUG: Processing file {myfile}, fname is {fname}")
             os.system('./macro_nano '+fname+' 1')
             print(f"DEBUG: Ran ./macro_nano {fname} 1")
-
-            os.system('python3 digi_process.py '+run+' WholeRun '+fname)
-            print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
-
-        # os.system(f'mv hist_CalibOutput_hadd_{run}.root hist_CalibOutput_hadd_{run}.root_old')
-
-        # os.system(f'hadd -f hist_CalibOutput_hadd_{run}.root hist_CalibOutputSummary_run'+run+'*.root')
-        # print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd_{run}.root")
-        
-        # os.system('mv *'+fname+'* WholeRunOutput_'+run)
-        # print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
         sys.exit()
     else:
         print("DEBUG: Running macro nano and digi_process.py for all files in condor jobs")
@@ -332,6 +333,21 @@ def process_after_nano_for_WholeRun(largefiles, run, run_locally=False, isdry=Fa
         print(f"Submitted condor jobs for run {run}.")
         sys.exit()
  
+def do_digi_process(files, run):
+    """Run digi_process.py script."""
+    for myfile in files:
+        fname = myfile.split("/")[-1].split(".")[0]
+        os.system('python3 digi_process.py '+run+' WholeRun '+fname)
+        print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
+
+        os.system(f'mv hist_CalibOutput_hadd_{run}.root hist_CalibOutput_hadd_{run}.root_old')
+
+        os.system(f'hadd -f hist_CalibOutput_hadd_{run}.root hist_CalibOutputSummary_run'+run+'*.root')
+        print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd_{run}.root")
+        
+        os.system('mv *'+fname+'* WholeRunOutput_'+run)
+        print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
+    os.system(f"bash makePlots.sh {run}")
 
 def create_tarball_current_dir(tar_name="MyHcalAnlzr.tar.gz"):
     """
@@ -362,7 +378,7 @@ def submit_job_for_macro_nano(largefiles, run, isdry=False):
     os.makedirs(condor_out_dir, exist_ok=True)
     for i,myfile in enumerate(files):
         fname = myfile.split("/")[-1].split(".")[0]
-        args = f"{current_dir};{fname};{EOS_OUPUT_DIR};{run}"
+        args = f"{current_dir};{fname};{EOS_OUPUT_DIR};{run};{CMSSW_VERSION}"
         outfile = f"{condor_out_dir}/output_macro_nano_{run}_{fname}.stdout"
         errfile = f"{condor_out_dir}/error_macro_nano_{run}_{fname}.stderr"
         logfile = f"{condor_out_dir}/log_macro_nano_{run}_{fname}.log"
@@ -376,13 +392,13 @@ def skim_nano_files(largefiles,run):
     files = [largefiles[f] for f in largefiles]
     for myfile in files:
         fname = myfile.split("/")[-1].split(".")[0]
-        print(f"Making file smaller: {myfile}")
         Nano_file_name = f"{EOS_OUPUT_DIR}/output_CalibRuns_Nano_Run{run}_{fname}.root"
         if not os.path.isfile(Nano_file_name):
             print(f"Nano file {Nano_file_name} not found! Skipping...")
             continue
         MakeSmall(Nano_file_name)
-        print(f"Finished making file smaller: {myfile}")      
+        print(f"Finished making file smaller: {Nano_file_name}")   
+        sys.exit()   
 
 def process_whole_fill(largefiles, run, WholeFill, date):
     """Process all files in a fill."""
@@ -416,7 +432,15 @@ def main():
     # Configuration
     blacklist_file = ["244aa98d-1bc6-4c3f-bf02-36032473b104.root"]
     whitelist_file = ["3c982479-12d1-407c-8399-67b38c82f709.root"]
-    
+    # blacklist_file = ["0eea9dfb-dfdf-4ce0-964e-42570267a677.root",
+    #                   "]  
+    # files_to_run = ["c9732b3e-7ef4-494d-9b11-351000e5c87b.root","62c86a49-10e1-47ef-9567-8265c9a033da.root",
+    # "168c68f2-6e19-4849-8a99-626b975ee677.root", "a1ea4f6c-3af8-4637-bf74-2b612a04755c.root", "33329bbe-4765-4485-8a0f-b78da77d1960.root",
+    # "08360896-e8a2-4729-ba71-63301a63e0d6.root", "687cbe1b-c456-4c3f-88f4-0d768e2858e4.root"
+    # ]
+    # whitelist_file = files_to_run
+
+
     args = parse_arguments()
     # Parse date
     date = args.date
@@ -494,10 +518,14 @@ def main():
         if args.after_nano:
             print("DEBUG: Running digi_process.py after making all nano tuples ...")
             process_after_nano_for_WholeRun(largefiles, run, run_locally=args.run_locally, isdry=args.dry)
+        if args.do_digi_process:
+            print("DEBUG: Running digi_process.py ...")
+            do_digi_process(files, run)
+            print("DEBUG: Finished digi_process")
     else:  # WholeFill
         process_whole_fill(largefiles, run, WholeFill, date)
     
-    print("Done making NanoTuple!")
+    # print(f"Done with the parer!")
 
 if __name__ == "__main__":
     main()
