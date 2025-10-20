@@ -55,18 +55,33 @@ int main(int argc, char *argv[])
 
   // New: Get input based on date in name, then find run number
   string fileName;
+  bool foundfile = false;
   for (const auto & entry_ : filesystem::directory_iterator("/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano/")){
     fileName = entry_.path().filename().string();
     if (fileName.find(floatday) != string::npos){
+      foundfile = true;
       break;
     }
   }
+  if (!foundfile){
+    cerr << "Input file for day " << floatday << " not found!" << endl;
+    exit(1);
+  }
+  
   string runid = "Run"+fileName.substr(25, 6);
 
   // There is a DISGUSTING amount of hardcoding here; unfortunately I wasn't able to loop over subdets or time slices.
-
+  cout << "Input file found: " << fileName << endl;
   TFile *f = new TFile(("/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano/"+fileName).c_str(), "read");
+  if(f->IsZombie()){
+    cerr << "Error opening file, exiting!" << fileName << endl;
+    exit(1);
+  }
   TNtuple* qiedigi = (TNtuple*)f->Get("Events");
+  if (!qiedigi){
+    cerr << "Error getting tree, exiting!" << fileName << endl;
+    exit(1);
+  }
   int ntot = qiedigi->GetEntries();
   cout << "Reading in input file, total " << ntot << " Entries." << endl;
   //float RunNum, LumiNum, EvtNum;
@@ -96,150 +111,154 @@ int main(int argc, char *argv[])
   qiedigi->SetBranchAddress("DigiHE_rawId", &DigiHE_rawId);
   qiedigi->SetBranchAddress("DigiHF_rawId", &DigiHF_rawId);
   qiedigi->SetBranchAddress("DigiHO_rawId", &DigiHO_rawId);
-  float DigiHB_fc0[9072], DigiHB_fc1[9072], DigiHB_fc2[9072], DigiHB_fc3[9072];
-  float DigiHB_fc4[9072], DigiHB_fc5[9072], DigiHB_fc6[9072], DigiHB_fc7[9072];
-  qiedigi->SetBranchAddress("DigiHB_fc0", &DigiHB_fc0);
-  qiedigi->SetBranchAddress("DigiHB_fc1", &DigiHB_fc1);
-  qiedigi->SetBranchAddress("DigiHB_fc2", &DigiHB_fc2);
-  qiedigi->SetBranchAddress("DigiHB_fc3", &DigiHB_fc3);
-  qiedigi->SetBranchAddress("DigiHB_fc4", &DigiHB_fc4);
-  qiedigi->SetBranchAddress("DigiHB_fc5", &DigiHB_fc5);
-  qiedigi->SetBranchAddress("DigiHB_fc6", &DigiHB_fc6);
-  qiedigi->SetBranchAddress("DigiHB_fc7", &DigiHB_fc7);
   float DigiHB_pedestalfc0[9072], DigiHB_pedestalfc1[9072], DigiHB_pedestalfc2[9072], DigiHB_pedestalfc3[9072];
   float DigiHB_pedestalfc4[9072], DigiHB_pedestalfc5[9072], DigiHB_pedestalfc6[9072], DigiHB_pedestalfc7[9072];
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc0", &DigiHB_pedestalfc0);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc1", &DigiHB_pedestalfc1);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc2", &DigiHB_pedestalfc2);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc3", &DigiHB_pedestalfc3);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc4", &DigiHB_pedestalfc4);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc5", &DigiHB_pedestalfc5);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc6", &DigiHB_pedestalfc6);
-  qiedigi->SetBranchAddress("DigiHB_pedestalfc7", &DigiHB_pedestalfc7);
-  int DigiHB_adc0[9072], DigiHB_adc1[9072], DigiHB_adc2[9072], DigiHB_adc3[9072];
-  int DigiHB_adc4[9072], DigiHB_adc5[9072], DigiHB_adc6[9072], DigiHB_adc7[9072];
-  qiedigi->SetBranchAddress("DigiHB_adc0", &DigiHB_adc0);
-  qiedigi->SetBranchAddress("DigiHB_adc1", &DigiHB_adc1);
-  qiedigi->SetBranchAddress("DigiHB_adc2", &DigiHB_adc2);
-  qiedigi->SetBranchAddress("DigiHB_adc3", &DigiHB_adc3);
-  qiedigi->SetBranchAddress("DigiHB_adc4", &DigiHB_adc4);
-  qiedigi->SetBranchAddress("DigiHB_adc5", &DigiHB_adc5);
-  qiedigi->SetBranchAddress("DigiHB_adc6", &DigiHB_adc6);
-  qiedigi->SetBranchAddress("DigiHB_adc7", &DigiHB_adc7);
-  int DigiHB_capid0[9072], DigiHB_capid1[9072], DigiHB_capid2[9072], DigiHB_capid3[9072];
-  int DigiHB_capid4[9072], DigiHB_capid5[9072], DigiHB_capid6[9072], DigiHB_capid7[9072];
-  qiedigi->SetBranchAddress("DigiHB_capid0", &DigiHB_capid0);
-  qiedigi->SetBranchAddress("DigiHB_capid1", &DigiHB_capid1);
-  qiedigi->SetBranchAddress("DigiHB_capid2", &DigiHB_capid2);
-  qiedigi->SetBranchAddress("DigiHB_capid3", &DigiHB_capid3);
-  qiedigi->SetBranchAddress("DigiHB_capid4", &DigiHB_capid4);
-  qiedigi->SetBranchAddress("DigiHB_capid5", &DigiHB_capid5);
-  qiedigi->SetBranchAddress("DigiHB_capid6", &DigiHB_capid6);
-  qiedigi->SetBranchAddress("DigiHB_capid7", &DigiHB_capid7);
-  float DigiHE_fc0[6768], DigiHE_fc1[6768], DigiHE_fc2[6768], DigiHE_fc3[6768];
-  float DigiHE_fc4[6768], DigiHE_fc5[6768], DigiHE_fc6[6768], DigiHE_fc7[6768];
-  qiedigi->SetBranchAddress("DigiHE_fc0", &DigiHE_fc0);
-  qiedigi->SetBranchAddress("DigiHE_fc1", &DigiHE_fc1);
-  qiedigi->SetBranchAddress("DigiHE_fc2", &DigiHE_fc2);
-  qiedigi->SetBranchAddress("DigiHE_fc3", &DigiHE_fc3);
-  qiedigi->SetBranchAddress("DigiHE_fc4", &DigiHE_fc4);
-  qiedigi->SetBranchAddress("DigiHE_fc5", &DigiHE_fc5);
-  qiedigi->SetBranchAddress("DigiHE_fc6", &DigiHE_fc6);
-  qiedigi->SetBranchAddress("DigiHE_fc7", &DigiHE_fc7);
+  float DigiHB_fc0[9072], DigiHB_fc1[9072], DigiHB_fc2[9072], DigiHB_fc3[9072];
+  float DigiHB_fc4[9072], DigiHB_fc5[9072], DigiHB_fc6[9072], DigiHB_fc7[9072];
+  float DigiHB_adc0[9072], DigiHB_adc1[9072], DigiHB_adc2[9072], DigiHB_adc3[9072];
+  float DigiHB_adc4[9072], DigiHB_adc5[9072], DigiHB_adc6[9072], DigiHB_adc7[9072];
+  UChar_t DigiHB_capid0[9072], DigiHB_capid1[9072], DigiHB_capid2[9072], DigiHB_capid3[9072];
+  UChar_t DigiHB_capid4[9072], DigiHB_capid5[9072], DigiHB_capid6[9072], DigiHB_capid7[9072];
+  if (qiedigi->GetBranch("DigiHB_pedestalfc0")) qiedigi->SetBranchAddress("DigiHB_pedestalfc0", &DigiHB_pedestalfc0);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc1")) qiedigi->SetBranchAddress("DigiHB_pedestalfc1", &DigiHB_pedestalfc1);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc2")) qiedigi->SetBranchAddress("DigiHB_pedestalfc2", &DigiHB_pedestalfc2);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc3")) qiedigi->SetBranchAddress("DigiHB_pedestalfc3", &DigiHB_pedestalfc3);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc4")) qiedigi->SetBranchAddress("DigiHB_pedestalfc4", &DigiHB_pedestalfc4);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc5")) qiedigi->SetBranchAddress("DigiHB_pedestalfc5", &DigiHB_pedestalfc5);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc6")) qiedigi->SetBranchAddress("DigiHB_pedestalfc6", &DigiHB_pedestalfc6);
+  if (qiedigi->GetBranch("DigiHB_pedestalfc7")) qiedigi->SetBranchAddress("DigiHB_pedestalfc7", &DigiHB_pedestalfc7);
+  if (qiedigi->GetBranch("DigiHB_fc0")) qiedigi->SetBranchAddress("DigiHB_fc0", &DigiHB_fc0);
+  if (qiedigi->GetBranch("DigiHB_fc1")) qiedigi->SetBranchAddress("DigiHB_fc1", &DigiHB_fc1);
+  if (qiedigi->GetBranch("DigiHB_fc2")) qiedigi->SetBranchAddress("DigiHB_fc2", &DigiHB_fc2);
+  if (qiedigi->GetBranch("DigiHB_fc3")) qiedigi->SetBranchAddress("DigiHB_fc3", &DigiHB_fc3);
+  if (qiedigi->GetBranch("DigiHB_fc4")) qiedigi->SetBranchAddress("DigiHB_fc4", &DigiHB_fc4);
+  if (qiedigi->GetBranch("DigiHB_fc5")) qiedigi->SetBranchAddress("DigiHB_fc5", &DigiHB_fc5);
+  if (qiedigi->GetBranch("DigiHB_fc6")) qiedigi->SetBranchAddress("DigiHB_fc6", &DigiHB_fc6);
+  if (qiedigi->GetBranch("DigiHB_fc7")) qiedigi->SetBranchAddress("DigiHB_fc7", &DigiHB_fc7);
+  if (qiedigi->GetBranch("DigiHB_adc0")) qiedigi->SetBranchAddress("DigiHB_adc0", &DigiHB_adc0);
+  if (qiedigi->GetBranch("DigiHB_adc1")) qiedigi->SetBranchAddress("DigiHB_adc1", &DigiHB_adc1);
+  if (qiedigi->GetBranch("DigiHB_adc2")) qiedigi->SetBranchAddress("DigiHB_adc2", &DigiHB_adc2);
+  if (qiedigi->GetBranch("DigiHB_adc3")) qiedigi->SetBranchAddress("DigiHB_adc3", &DigiHB_adc3);
+  if (qiedigi->GetBranch("DigiHB_adc4")) qiedigi->SetBranchAddress("DigiHB_adc4", &DigiHB_adc4);
+  if (qiedigi->GetBranch("DigiHB_adc5")) qiedigi->SetBranchAddress("DigiHB_adc5", &DigiHB_adc5);
+  if (qiedigi->GetBranch("DigiHB_adc6")) qiedigi->SetBranchAddress("DigiHB_adc6", &DigiHB_adc6);
+  if (qiedigi->GetBranch("DigiHB_adc7")) qiedigi->SetBranchAddress("DigiHB_adc7", &DigiHB_adc7);
+  if (qiedigi->GetBranch("DigiHB_capid0")) qiedigi->SetBranchAddress("DigiHB_capid0", &DigiHB_capid0);
+  if (qiedigi->GetBranch("DigiHB_capid1")) qiedigi->SetBranchAddress("DigiHB_capid1", &DigiHB_capid1);
+  if (qiedigi->GetBranch("DigiHB_capid2")) qiedigi->SetBranchAddress("DigiHB_capid2", &DigiHB_capid2);
+  if (qiedigi->GetBranch("DigiHB_capid3")) qiedigi->SetBranchAddress("DigiHB_capid3", &DigiHB_capid3);
+  if (qiedigi->GetBranch("DigiHB_capid4")) qiedigi->SetBranchAddress("DigiHB_capid4", &DigiHB_capid4);
+  if (qiedigi->GetBranch("DigiHB_capid5")) qiedigi->SetBranchAddress("DigiHB_capid5", &DigiHB_capid5);
+  if (qiedigi->GetBranch("DigiHB_capid6")) qiedigi->SetBranchAddress("DigiHB_capid6", &DigiHB_capid6);
+  if (qiedigi->GetBranch("DigiHB_capid7")) qiedigi->SetBranchAddress("DigiHB_capid7", &DigiHB_capid7);
   float DigiHE_pedestalfc0[6768], DigiHE_pedestalfc1[6768], DigiHE_pedestalfc2[6768], DigiHE_pedestalfc3[6768];
   float DigiHE_pedestalfc4[6768], DigiHE_pedestalfc5[6768], DigiHE_pedestalfc6[6768], DigiHE_pedestalfc7[6768];
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc0", &DigiHE_pedestalfc0);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc1", &DigiHE_pedestalfc1);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc2", &DigiHE_pedestalfc2);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc3", &DigiHE_pedestalfc3);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc4", &DigiHE_pedestalfc4);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc5", &DigiHE_pedestalfc5);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc6", &DigiHE_pedestalfc6);
-  qiedigi->SetBranchAddress("DigiHE_pedestalfc7", &DigiHE_pedestalfc7);
-  int DigiHE_adc0[6768], DigiHE_adc1[6768], DigiHE_adc2[6768], DigiHE_adc3[6768];
-  int DigiHE_adc4[6768], DigiHE_adc5[6768], DigiHE_adc6[6768], DigiHE_adc7[6768];
-  qiedigi->SetBranchAddress("DigiHE_adc0", &DigiHE_adc0);
-  qiedigi->SetBranchAddress("DigiHE_adc1", &DigiHE_adc1);
-  qiedigi->SetBranchAddress("DigiHE_adc2", &DigiHE_adc2);
-  qiedigi->SetBranchAddress("DigiHE_adc3", &DigiHE_adc3);
-  qiedigi->SetBranchAddress("DigiHE_adc4", &DigiHE_adc4);
-  qiedigi->SetBranchAddress("DigiHE_adc5", &DigiHE_adc5);
-  qiedigi->SetBranchAddress("DigiHE_adc6", &DigiHE_adc6);
-  qiedigi->SetBranchAddress("DigiHE_adc7", &DigiHE_adc7);
-  int DigiHE_capid0[6768], DigiHE_capid1[6768], DigiHE_capid2[6768], DigiHE_capid3[6768];
-  int DigiHE_capid4[6768], DigiHE_capid5[6768], DigiHE_capid6[6768], DigiHE_capid7[6768];
-  qiedigi->SetBranchAddress("DigiHE_capid0", &DigiHE_capid0);
-  qiedigi->SetBranchAddress("DigiHE_capid1", &DigiHE_capid1);
-  qiedigi->SetBranchAddress("DigiHE_capid2", &DigiHE_capid2);
-  qiedigi->SetBranchAddress("DigiHE_capid3", &DigiHE_capid3);
-  qiedigi->SetBranchAddress("DigiHE_capid4", &DigiHE_capid4);
-  qiedigi->SetBranchAddress("DigiHE_capid5", &DigiHE_capid5);
-  qiedigi->SetBranchAddress("DigiHE_capid6", &DigiHE_capid6);
-  qiedigi->SetBranchAddress("DigiHE_capid7", &DigiHE_capid7);
-  float DigiHF_fc0[3456], DigiHF_fc1[3456], DigiHF_fc2[3456];
-  qiedigi->SetBranchAddress("DigiHF_fc0", &DigiHF_fc0);
-  qiedigi->SetBranchAddress("DigiHF_fc1", &DigiHF_fc1);
-  qiedigi->SetBranchAddress("DigiHF_fc2", &DigiHF_fc2);
+  float DigiHE_fc0[6768], DigiHE_fc1[6768], DigiHE_fc2[6768], DigiHE_fc3[6768];
+  float DigiHE_fc4[6768], DigiHE_fc5[6768], DigiHE_fc6[6768], DigiHE_fc7[6768];
+  float DigiHE_adc0[6768], DigiHE_adc1[6768], DigiHE_adc2[6768], DigiHE_adc3[6768];
+  float DigiHE_adc4[6768], DigiHE_adc5[6768], DigiHE_adc6[6768], DigiHE_adc7[6768];
+  UChar_t DigiHE_capid0[6768], DigiHE_capid1[6768], DigiHE_capid2[6768], DigiHE_capid3[6768];
+  UChar_t DigiHE_capid4[6768], DigiHE_capid5[6768], DigiHE_capid6[6768], DigiHE_capid7[6768];
+  if (qiedigi->GetBranch("DigiHE_pedestalfc0")) qiedigi->SetBranchAddress("DigiHE_pedestalfc0", &DigiHE_pedestalfc0);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc1")) qiedigi->SetBranchAddress("DigiHE_pedestalfc1", &DigiHE_pedestalfc1);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc2")) qiedigi->SetBranchAddress("DigiHE_pedestalfc2", &DigiHE_pedestalfc2);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc3")) qiedigi->SetBranchAddress("DigiHE_pedestalfc3", &DigiHE_pedestalfc3);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc4")) qiedigi->SetBranchAddress("DigiHE_pedestalfc4", &DigiHE_pedestalfc4);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc5")) qiedigi->SetBranchAddress("DigiHE_pedestalfc5", &DigiHE_pedestalfc5);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc6")) qiedigi->SetBranchAddress("DigiHE_pedestalfc6", &DigiHE_pedestalfc6);
+  if (qiedigi->GetBranch("DigiHE_pedestalfc7")) qiedigi->SetBranchAddress("DigiHE_pedestalfc7", &DigiHE_pedestalfc7);
+  if (qiedigi->GetBranch("DigiHE_fc0")) qiedigi->SetBranchAddress("DigiHE_fc0", &DigiHE_fc0);
+  if (qiedigi->GetBranch("DigiHE_fc1")) qiedigi->SetBranchAddress("DigiHE_fc1", &DigiHE_fc1);
+  if (qiedigi->GetBranch("DigiHE_fc2")) qiedigi->SetBranchAddress("DigiHE_fc2", &DigiHE_fc2);
+  if (qiedigi->GetBranch("DigiHE_fc3")) qiedigi->SetBranchAddress("DigiHE_fc3", &DigiHE_fc3);
+  if (qiedigi->GetBranch("DigiHE_fc4")) qiedigi->SetBranchAddress("DigiHE_fc4", &DigiHE_fc4);
+  if (qiedigi->GetBranch("DigiHE_fc5")) qiedigi->SetBranchAddress("DigiHE_fc5", &DigiHE_fc5);
+  if (qiedigi->GetBranch("DigiHE_fc6")) qiedigi->SetBranchAddress("DigiHE_fc6", &DigiHE_fc6);
+  if (qiedigi->GetBranch("DigiHE_fc7")) qiedigi->SetBranchAddress("DigiHE_fc7", &DigiHE_fc7);
+  if (qiedigi->GetBranch("DigiHE_adc0")) qiedigi->SetBranchAddress("DigiHE_adc0", &DigiHE_adc0);
+  if (qiedigi->GetBranch("DigiHE_adc1")) qiedigi->SetBranchAddress("DigiHE_adc1", &DigiHE_adc1);
+  if (qiedigi->GetBranch("DigiHE_adc2")) qiedigi->SetBranchAddress("DigiHE_adc2", &DigiHE_adc2);
+  if (qiedigi->GetBranch("DigiHE_adc3")) qiedigi->SetBranchAddress("DigiHE_adc3", &DigiHE_adc3);
+  if (qiedigi->GetBranch("DigiHE_adc4")) qiedigi->SetBranchAddress("DigiHE_adc4", &DigiHE_adc4);
+  if (qiedigi->GetBranch("DigiHE_adc5")) qiedigi->SetBranchAddress("DigiHE_adc5", &DigiHE_adc5);
+  if (qiedigi->GetBranch("DigiHE_adc6")) qiedigi->SetBranchAddress("DigiHE_adc6", &DigiHE_adc6);
+  if (qiedigi->GetBranch("DigiHE_adc7")) qiedigi->SetBranchAddress("DigiHE_adc7", &DigiHE_adc7);
+  if (qiedigi->GetBranch("DigiHE_capid0")) qiedigi->SetBranchAddress("DigiHE_capid0", &DigiHE_capid0);
+  if (qiedigi->GetBranch("DigiHE_capid1")) qiedigi->SetBranchAddress("DigiHE_capid1", &DigiHE_capid1);
+  if (qiedigi->GetBranch("DigiHE_capid2")) qiedigi->SetBranchAddress("DigiHE_capid2", &DigiHE_capid2);
+  if (qiedigi->GetBranch("DigiHE_capid3")) qiedigi->SetBranchAddress("DigiHE_capid3", &DigiHE_capid3);
+  if (qiedigi->GetBranch("DigiHE_capid4")) qiedigi->SetBranchAddress("DigiHE_capid4", &DigiHE_capid4);
+  if (qiedigi->GetBranch("DigiHE_capid5")) qiedigi->SetBranchAddress("DigiHE_capid5", &DigiHE_capid5);
+  if (qiedigi->GetBranch("DigiHE_capid6")) qiedigi->SetBranchAddress("DigiHE_capid6", &DigiHE_capid6);
+  if (qiedigi->GetBranch("DigiHE_capid7")) qiedigi->SetBranchAddress("DigiHE_capid7", &DigiHE_capid7);
   float DigiHF_pedestalfc0[3456], DigiHF_pedestalfc1[3456], DigiHF_pedestalfc2[3456];
-  qiedigi->SetBranchAddress("DigiHF_pedestalfc0", &DigiHF_pedestalfc0);
-  qiedigi->SetBranchAddress("DigiHF_pedestalfc1", &DigiHF_pedestalfc1);
-  qiedigi->SetBranchAddress("DigiHF_pedestalfc2", &DigiHF_pedestalfc2);
-  int DigiHF_adc0[3456], DigiHF_adc1[3456], DigiHF_adc2[3456];
-  qiedigi->SetBranchAddress("DigiHF_adc0", &DigiHF_adc0);
-  qiedigi->SetBranchAddress("DigiHF_adc1", &DigiHF_adc1);
-  qiedigi->SetBranchAddress("DigiHF_adc2", &DigiHF_adc2);
-  int DigiHF_capid0[3456], DigiHF_capid1[3456], DigiHF_capid2[3456];
-  qiedigi->SetBranchAddress("DigiHF_capid0", &DigiHF_capid0);
-  qiedigi->SetBranchAddress("DigiHF_capid1", &DigiHF_capid1);
-  qiedigi->SetBranchAddress("DigiHF_capid2", &DigiHF_capid2);
-  float DigiHO_fc0[2160], DigiHO_fc1[2160], DigiHO_fc2[2160], DigiHO_fc3[2160], DigiHO_fc4[2160];
-  float DigiHO_fc5[2160], DigiHO_fc6[2160], DigiHO_fc7[2160], DigiHO_fc8[2160], DigiHO_fc9[2160];
-  qiedigi->SetBranchAddress("DigiHO_fc0", &DigiHO_fc0);
-  qiedigi->SetBranchAddress("DigiHO_fc1", &DigiHO_fc1);
-  qiedigi->SetBranchAddress("DigiHO_fc2", &DigiHO_fc2);
-  qiedigi->SetBranchAddress("DigiHO_fc3", &DigiHO_fc3);
-  qiedigi->SetBranchAddress("DigiHO_fc4", &DigiHO_fc4);
-  qiedigi->SetBranchAddress("DigiHO_fc5", &DigiHO_fc5);
-  qiedigi->SetBranchAddress("DigiHO_fc6", &DigiHO_fc6);
-  qiedigi->SetBranchAddress("DigiHO_fc7", &DigiHO_fc7);
-  qiedigi->SetBranchAddress("DigiHO_fc8", &DigiHO_fc8);
-  qiedigi->SetBranchAddress("DigiHO_fc9", &DigiHO_fc9);
-  float DigiHO_pedestalfc0[2160], DigiHO_pedestalfc1[2160], DigiHO_pedestalfc2[2160], DigiHO_pedestalfc3[2160], DigiHO_pedestalfc4[2160];
-  float DigiHO_pedestalfc5[2160], DigiHO_pedestalfc6[2160], DigiHO_pedestalfc7[2160], DigiHO_pedestalfc8[2160], DigiHO_pedestalfc9[2160];
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc0", &DigiHO_pedestalfc0);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc1", &DigiHO_pedestalfc1);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc2", &DigiHO_pedestalfc2);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc3", &DigiHO_pedestalfc3);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc4", &DigiHO_pedestalfc4);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc5", &DigiHO_pedestalfc5);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc6", &DigiHO_pedestalfc6);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc7", &DigiHO_pedestalfc7);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc8", &DigiHO_pedestalfc8);
-  qiedigi->SetBranchAddress("DigiHO_pedestalfc9", &DigiHO_pedestalfc9);
-  int DigiHO_adc0[2160], DigiHO_adc1[2160], DigiHO_adc2[2160], DigiHO_adc3[2160], DigiHO_adc4[2160];
-  int DigiHO_adc5[2160], DigiHO_adc6[2160], DigiHO_adc7[2160], DigiHO_adc8[2160], DigiHO_adc9[2160];
-  qiedigi->SetBranchAddress("DigiHO_adc0", &DigiHO_adc0);
-  qiedigi->SetBranchAddress("DigiHO_adc1", &DigiHO_adc1);
-  qiedigi->SetBranchAddress("DigiHO_adc2", &DigiHO_adc2);
-  qiedigi->SetBranchAddress("DigiHO_adc3", &DigiHO_adc3);
-  qiedigi->SetBranchAddress("DigiHO_adc4", &DigiHO_adc4);
-  qiedigi->SetBranchAddress("DigiHO_adc5", &DigiHO_adc5);
-  qiedigi->SetBranchAddress("DigiHO_adc6", &DigiHO_adc6);
-  qiedigi->SetBranchAddress("DigiHO_adc7", &DigiHO_adc7);
-  qiedigi->SetBranchAddress("DigiHO_adc8", &DigiHO_adc8);
-  qiedigi->SetBranchAddress("DigiHO_adc9", &DigiHO_adc9);
-  int DigiHO_capid0[2160], DigiHO_capid1[2160], DigiHO_capid2[2160], DigiHO_capid3[2160], DigiHO_capid4[2160];
-  int DigiHO_capid5[2160], DigiHO_capid6[2160], DigiHO_capid7[2160], DigiHO_capid8[2160], DigiHO_capid9[2160];
-  qiedigi->SetBranchAddress("DigiHO_capid0", &DigiHO_capid0);
-  qiedigi->SetBranchAddress("DigiHO_capid1", &DigiHO_capid1);
-  qiedigi->SetBranchAddress("DigiHO_capid2", &DigiHO_capid2);
-  qiedigi->SetBranchAddress("DigiHO_capid3", &DigiHO_capid3);
-  qiedigi->SetBranchAddress("DigiHO_capid4", &DigiHO_capid4);
-  qiedigi->SetBranchAddress("DigiHO_capid5", &DigiHO_capid5);
-  qiedigi->SetBranchAddress("DigiHO_capid6", &DigiHO_capid6);
-  qiedigi->SetBranchAddress("DigiHO_capid7", &DigiHO_capid7);
-  qiedigi->SetBranchAddress("DigiHO_capid8", &DigiHO_capid8);
-  qiedigi->SetBranchAddress("DigiHO_capid9", &DigiHO_capid9);
+  float DigiHF_fc0[3456], DigiHF_fc1[3456], DigiHF_fc2[3456];
+  float DigiHF_adc0[3456], DigiHF_adc1[3456], DigiHF_adc2[3456];
+  UChar_t DigiHF_capid0[3456], DigiHF_capid1[3456], DigiHF_capid2[3456];
+  if (qiedigi->GetBranch("DigiHF_pedestalfc0")) qiedigi->SetBranchAddress("DigiHF_pedestalfc0", &DigiHF_pedestalfc0);
+  if (qiedigi->GetBranch("DigiHF_pedestalfc1")) qiedigi->SetBranchAddress("DigiHF_pedestalfc1", &DigiHF_pedestalfc1);
+  if (qiedigi->GetBranch("DigiHF_pedestalfc2")) qiedigi->SetBranchAddress("DigiHF_pedestalfc2", &DigiHF_pedestalfc2);
+  if (qiedigi->GetBranch("DigiHF_fc0")) qiedigi->SetBranchAddress("DigiHF_fc0", &DigiHF_fc0);
+  if (qiedigi->GetBranch("DigiHF_fc1")) qiedigi->SetBranchAddress("DigiHF_fc1", &DigiHF_fc1);
+  if (qiedigi->GetBranch("DigiHF_fc2")) qiedigi->SetBranchAddress("DigiHF_fc2", &DigiHF_fc2);
+  if (qiedigi->GetBranch("DigiHF_adc0")) qiedigi->SetBranchAddress("DigiHF_adc0", &DigiHF_adc0);
+  if (qiedigi->GetBranch("DigiHF_adc1")) qiedigi->SetBranchAddress("DigiHF_adc1", &DigiHF_adc1);
+  if (qiedigi->GetBranch("DigiHF_adc2")) qiedigi->SetBranchAddress("DigiHF_adc2", &DigiHF_adc2);
+  if (qiedigi->GetBranch("DigiHF_capid0")) qiedigi->SetBranchAddress("DigiHF_capid0", &DigiHF_capid0);
+  if (qiedigi->GetBranch("DigiHF_capid1")) qiedigi->SetBranchAddress("DigiHF_capid1", &DigiHF_capid1);
+  if (qiedigi->GetBranch("DigiHF_capid2")) qiedigi->SetBranchAddress("DigiHF_capid2", &DigiHF_capid2);
+  float DigiHO_pedestalfc0[2160], DigiHO_pedestalfc1[2160], DigiHO_pedestalfc2[2160], DigiHO_pedestalfc3[2160];
+  float DigiHO_pedestalfc4[2160], DigiHO_pedestalfc5[2160], DigiHO_pedestalfc6[2160], DigiHO_pedestalfc7[2160];
+  float DigiHO_pedestalfc8[2160], DigiHO_pedestalfc9[2160];
+  float DigiHO_fc0[2160], DigiHO_fc1[2160], DigiHO_fc2[2160], DigiHO_fc3[2160];
+  float DigiHO_fc4[2160], DigiHO_fc5[2160], DigiHO_fc6[2160], DigiHO_fc7[2160];
+  float DigiHO_fc8[2160], DigiHO_fc9[2160];
+  float DigiHO_adc0[2160], DigiHO_adc1[2160], DigiHO_adc2[2160], DigiHO_adc3[2160];
+  float DigiHO_adc4[2160], DigiHO_adc5[2160], DigiHO_adc6[2160], DigiHO_adc7[2160];  
+  float DigiHO_adc8[2160], DigiHO_adc9[2160];
+  UChar_t DigiHO_capid0[2160], DigiHO_capid1[2160], DigiHO_capid2[2160], DigiHO_capid3[2160];
+  UChar_t DigiHO_capid4[2160], DigiHO_capid5[2160], DigiHO_capid6[2160], DigiHO_capid7[2160];
+  UChar_t DigiHO_capid8[2160], DigiHO_capid9[2160];
+  if (qiedigi->GetBranch("DigiHO_pedestalfc0")) qiedigi->SetBranchAddress("DigiHO_pedestalfc0", &DigiHO_pedestalfc0);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc1")) qiedigi->SetBranchAddress("DigiHO_pedestalfc1", &DigiHO_pedestalfc1);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc2")) qiedigi->SetBranchAddress("DigiHO_pedestalfc2", &DigiHO_pedestalfc2);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc3")) qiedigi->SetBranchAddress("DigiHO_pedestalfc3", &DigiHO_pedestalfc3);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc4")) qiedigi->SetBranchAddress("DigiHO_pedestalfc4", &DigiHO_pedestalfc4);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc5")) qiedigi->SetBranchAddress("DigiHO_pedestalfc5", &DigiHO_pedestalfc5);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc6")) qiedigi->SetBranchAddress("DigiHO_pedestalfc6", &DigiHO_pedestalfc6);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc7")) qiedigi->SetBranchAddress("DigiHO_pedestalfc7", &DigiHO_pedestalfc7);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc8")) qiedigi->SetBranchAddress("DigiHO_pedestalfc8", &DigiHO_pedestalfc8);
+  if (qiedigi->GetBranch("DigiHO_pedestalfc9")) qiedigi->SetBranchAddress("DigiHO_pedestalfc9", &DigiHO_pedestalfc9);
+  if (qiedigi->GetBranch("DigiHO_fc0")) qiedigi->SetBranchAddress("DigiHO_fc0", &DigiHO_fc0);
+  if (qiedigi->GetBranch("DigiHO_fc1")) qiedigi->SetBranchAddress("DigiHO_fc1", &DigiHO_fc1);
+  if (qiedigi->GetBranch("DigiHO_fc2")) qiedigi->SetBranchAddress("DigiHO_fc2", &DigiHO_fc2);
+  if (qiedigi->GetBranch("DigiHO_fc3")) qiedigi->SetBranchAddress("DigiHO_fc3", &DigiHO_fc3);
+  if (qiedigi->GetBranch("DigiHO_fc4")) qiedigi->SetBranchAddress("DigiHO_fc4", &DigiHO_fc4);
+  if (qiedigi->GetBranch("DigiHO_fc5")) qiedigi->SetBranchAddress("DigiHO_fc5", &DigiHO_fc5);
+  if (qiedigi->GetBranch("DigiHO_fc6")) qiedigi->SetBranchAddress("DigiHO_fc6", &DigiHO_fc6);
+  if (qiedigi->GetBranch("DigiHO_fc7")) qiedigi->SetBranchAddress("DigiHO_fc7", &DigiHO_fc7);
+  if (qiedigi->GetBranch("DigiHO_fc8")) qiedigi->SetBranchAddress("DigiHO_fc8", &DigiHO_fc8);
+  if (qiedigi->GetBranch("DigiHO_fc9")) qiedigi->SetBranchAddress("DigiHO_fc9", &DigiHO_fc9);
+  if (qiedigi->GetBranch("DigiHO_adc0")) qiedigi->SetBranchAddress("DigiHO_adc0", &DigiHO_adc0);
+  if (qiedigi->GetBranch("DigiHO_adc1")) qiedigi->SetBranchAddress("DigiHO_adc1", &DigiHO_adc1);
+  if (qiedigi->GetBranch("DigiHO_adc2")) qiedigi->SetBranchAddress("DigiHO_adc2", &DigiHO_adc2);
+  if (qiedigi->GetBranch("DigiHO_adc3")) qiedigi->SetBranchAddress("DigiHO_adc3", &DigiHO_adc3);
+  if (qiedigi->GetBranch("DigiHO_adc4")) qiedigi->SetBranchAddress("DigiHO_adc4", &DigiHO_adc4);
+  if (qiedigi->GetBranch("DigiHO_adc5")) qiedigi->SetBranchAddress("DigiHO_adc5", &DigiHO_adc5);
+  if (qiedigi->GetBranch("DigiHO_adc6")) qiedigi->SetBranchAddress("DigiHO_adc6", &DigiHO_adc6);
+  if (qiedigi->GetBranch("DigiHO_adc7")) qiedigi->SetBranchAddress("DigiHO_adc7", &DigiHO_adc7);
+  if (qiedigi->GetBranch("DigiHO_adc8")) qiedigi->SetBranchAddress("DigiHO_adc8", &DigiHO_adc8);
+  if (qiedigi->GetBranch("DigiHO_adc9")) qiedigi->SetBranchAddress("DigiHO_adc9", &DigiHO_adc9);
+  if (qiedigi->GetBranch("DigiHO_capid0")) qiedigi->SetBranchAddress("DigiHO_capid0", &DigiHO_capid0);
+  if (qiedigi->GetBranch("DigiHO_capid1")) qiedigi->SetBranchAddress("DigiHO_capid1", &DigiHO_capid1);
+  if (qiedigi->GetBranch("DigiHO_capid2")) qiedigi->SetBranchAddress("DigiHO_capid2", &DigiHO_capid2);
+  if (qiedigi->GetBranch("DigiHO_capid3")) qiedigi->SetBranchAddress("DigiHO_capid3", &DigiHO_capid3);
+  if (qiedigi->GetBranch("DigiHO_capid4")) qiedigi->SetBranchAddress("DigiHO_capid4", &DigiHO_capid4);
+  if (qiedigi->GetBranch("DigiHO_capid5")) qiedigi->SetBranchAddress("DigiHO_capid5", &DigiHO_capid5);
+  if (qiedigi->GetBranch("DigiHO_capid6")) qiedigi->SetBranchAddress("DigiHO_capid6", &DigiHO_capid6);
+  if (qiedigi->GetBranch("DigiHO_capid7")) qiedigi->SetBranchAddress("DigiHO_capid7", &DigiHO_capid7);
+  if (qiedigi->GetBranch("DigiHO_capid8")) qiedigi->SetBranchAddress("DigiHO_capid8", &DigiHO_capid8);
+  if (qiedigi->GetBranch("DigiHO_capid9")) qiedigi->SetBranchAddress("DigiHO_capid9", &DigiHO_capid9);
   UChar_t eventtype, DigiHB_sipmTypes[9072], DigiHE_sipmTypes[6768];
   qiedigi->SetBranchAddress("uMNio_EventType", &eventtype);
   qiedigi->SetBranchAddress("DigiHB_sipmTypes", &DigiHB_sipmTypes);
@@ -247,14 +266,14 @@ int main(int argc, char *argv[])
 
   uint LS;
   qiedigi->SetBranchAddress("luminosityBlock", &LS);
-  if(Whole==1){
-    qiedigi->GetEntry(0);
-    floatday = "LS"+to_string(LS)+"_"+floatday;
-  }else if(Whole!=0){
-    runid = "Fill"+to_string(Whole);
-  }
-
-  TFile *ofile = new TFile(("hist_CalibOutput_"+runid+"_"+floatday+".root").c_str(), "recreate");
+  if (Whole==1){ runid = runid; }
+  else if (Whole != 0) runid = "Fill"+to_string(Whole);
+  
+  // Per-LS output file handling
+  TFile *ofile = nullptr;
+  uint currentLS = UINT_MAX;
+  string originalFloatday = floatday;
+///
 
   cout << "Creating base histograms..." << endl;
 
@@ -263,7 +282,7 @@ int main(int argc, char *argv[])
   map<string, map<string, map<int, map<int, map<int, pair<float, float>>>>>> histarrayFCfull, histarrayADCfull; // As above, but contains Mean/RMS averaged over entries
   map<string, map<string, map<int, map<int, map<int, vector<pair<float, float>>>>>>> histarrayFCtemp, histarrayADCtemp; // Because of memory issues, can't keep all TH1F: Save means/RMSs here before deleting hists
   map<string, map<int, map<int, map<int, map<int, map<int, vector<float>>>>>>> CapIDarrayFC; // Subdet, ieta, iphi, depth, capid, entry;  value is vector of fC values
-  map<string, map<int, map<int, map<int, map<int, map<int, pair<float, float>>>>>>> CapIDarrayFCmeanstd; // As above, but contains determined Mean/RMS per entry
+  map<string, map<int, map<int, map<int, map<int, map<int, pair<float, float>>>>>>> CapIDarrayFCmeanstd; // Subdet, ieta, iphi, depth, capid, entry;  value is pair of Mean/RMS per entry
   map<string, map<int, map<int, map<int, int>>>> rawIDarray; // Subdet, ieta, iphi, depth;  value is int of RawId
   map<string, map<int, map<int, map<int, int>>>> CheckMissing; // Subdet, ieta, iphi, depth;  value is int of RawId
 
@@ -335,23 +354,222 @@ int main(int argc, char *argv[])
   int entry=1;
   for(int i=0; i<ntot; i++){
     if((i+1)%100==0) cout << i+1 << "-th event." << endl;
+    
+    // Get entry once at the beginning of each iteration
+    qiedigi->GetEntry(i);
+    
+    // Handle LS changes - create new output file per LS
+    if (LS != currentLS) {
+      // Close previous LS file if it exists
+      if (ofile) {
+        cout << "Closing LS " << currentLS << " file..." << endl;
+        ofile->cd();
+        // Write histograms with safety checks
+        cout << "DEBUG: Writing histograms for LS " << currentLS << endl;
+        int histCount = 0;
+        for (auto const& subdet : subdets){
+          if (histarrayFC.find(subdet) == histarrayFC.end()) {
+            cout << "DEBUG: Subdet " << subdet << " not found in histarrayFC" << endl;
+            continue;
+          }
+          for (auto const& siz : histarrayFC[subdet]){
+            if (histarrayFC[subdet].find(siz.first) == histarrayFC[subdet].end()) continue;
+            for (auto const& eta : histarrayFC[subdet][siz.first]){
+              if (histarrayFC[subdet][siz.first].find(eta.first) == histarrayFC[subdet][siz.first].end()) continue;
+              for (auto const& phi : histarrayFC[subdet][siz.first][eta.first]){
+                if (histarrayFC[subdet][siz.first][eta.first].find(phi.first) == histarrayFC[subdet][siz.first][eta.first].end()) continue;
+                for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
+                  if (histarrayFC[subdet][siz.first][eta.first][phi.first].find(dep.first) == histarrayFC[subdet][siz.first][eta.first][phi.first].end()) continue;
+                  int targetEntry = (Nentry/2)+1;
+                  if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].end()){
+                    TH1F* hfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
+                    if (hfc && hfc->GetEntries() > 0) {
+                      hfc->Write();
+                      histCount++;
+                    }
+                    // Check if ADC histogram exists
+                    if (histarrayADC.find(subdet) != histarrayADC.end() &&
+                        histarrayADC[subdet].find(siz.first) != histarrayADC[subdet].end() &&
+                        histarrayADC[subdet][siz.first].find(eta.first) != histarrayADC[subdet][siz.first].end() &&
+                        histarrayADC[subdet][siz.first][eta.first].find(phi.first) != histarrayADC[subdet][siz.first][eta.first].end() &&
+                        histarrayADC[subdet][siz.first][eta.first][phi.first].find(dep.first) != histarrayADC[subdet][siz.first][eta.first][phi.first].end() &&
+                        histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].end()) {
+                      TH1F* hadc = histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
+                      if (hadc && hadc->GetEntries() > 0) {
+                        hadc->Write();
+                        histCount++;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        cout << "DEBUG: Wrote " << histCount << " histograms" << endl;
+        if (ADCvsFC && ADCvsFC->GetEntries() > 0) {
+          ADCvsFC->Write();
+          cout << "DEBUG: Wrote ADCvsFC histogram" << endl;
+        }
+        if (adc2fc) {
+          adc2fc->Write();
+          cout << "DEBUG: Wrote adc2fc graph" << endl;
+        }
+        if (fc2adc) {
+          fc2adc->Write();
+          cout << "DEBUG: Wrote fc2adc graph" << endl;
+        }
+        ofile->Close();
+        cout << "DEBUG: File closed successfully" << endl;
+        delete ofile;
+        ofile = nullptr;
+     
+     // Clean up histograms to prevent memory issues
+          // Clear histogram pointers (ROOT owns them after Write(), so don't delete manually)
+        cout << "DEBUG: Clearing histogram pointers for LS " << currentLS << "..." << endl;
+        int clearedFC = 0, clearedADC = 0;
+        for (auto const& subdet : subdets){
+          if (histarrayFC.find(subdet) == histarrayFC.end()) continue;
+          for (auto& siz : histarrayFC[subdet]){
+            for (auto& eta : histarrayFC[subdet][siz.first]){
+              for (auto& phi : histarrayFC[subdet][siz.first][eta.first]){
+                for (auto& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
+                  clearedFC += histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].size();
+                  histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].clear();
+                }
+              }
+            }
+          }
+        }
+        for (auto const& subdet : subdets){
+          if (histarrayADC.find(subdet) == histarrayADC.end()) continue;
+          for (auto& siz : histarrayADC[subdet]){
+            for (auto& eta : histarrayADC[subdet][siz.first]){
+              for (auto& phi : histarrayADC[subdet][siz.first][eta.first]){
+                for (auto& dep : histarrayADC[subdet][siz.first][eta.first][phi.first]){
+                  clearedADC += histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].size();
+                  histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].clear();
+                }
+              }
+            }
+          }
+        }
+        
+        // Global histograms are also owned by ROOT after Write()
+        ADCvsFC = nullptr;
+        adc2fc = nullptr;
+        fc2adc = nullptr;
+        cout << "DEBUG: Cleared " << clearedFC << " FC histogram pointers and " << clearedADC << " ADC histogram pointers" << endl;
+      }
+      
+   cout << "DEBUG: Starting LS transition from " << currentLS << " to " << LS << endl;
+      currentLS = LS;
+      floatday = "LS"+to_string(LS)+"_"+originalFloatday;
+      cout << "Opening new file for LS " << currentLS << ": hist_CalibOutput_" << runid << "_" << floatday << ".root" << endl;
+   string newFileName = "hist_CalibOutput_"+runid+"_"+floatday+".root";
+   cout << "DEBUG: About to create new file: " << newFileName << endl;
+   
+   // Try to create the new file with error handling
+   try {
+     cout << "DEBUG: Calling TFile constructor..." << endl;
+    
+     ofile = new TFile(newFileName.c_str(), "recreate");
+     cout << "DEBUG: TFile constructor completed" << endl;
+   } catch (...) {
+     cout << "ERROR: Exception caught during TFile creation!" << endl;
+     exit(1);
+   }
+   
+   cout << "DEBUG: Checking file validity..." << endl;
+
+   if (!ofile) {
+     cerr << "ERROR: Failed to create TFile object for LS " << currentLS << endl;
+     exit(1);
+   }
+   if (ofile->IsZombie()) {
+
+     cerr << "ERROR: TFile is zombie for LS " << currentLS << endl;
+     delete ofile;
+     ofile = nullptr;
+        exit(1);
+      }
+   
+   cout << "DEBUG: File created successfully, recreating histograms..." << endl;
+   
+   // Recreate global histograms with safety checks
+   try {
+    //  cout << "DEBUG: Creating ADCvsFC histogram..." << endl;
+     ADCvsFC = new TH2F("ADCvsFC", "ADC vs FC", 100, 0, 500, 100, 0, 2000);
+     if (!ADCvsFC) {
+       cerr << "ERROR: Failed to create ADCvsFC histogram" << endl;
+       exit(1);
+     }
+     cout << "DEBUG: ADCvsFC created successfully" << endl;
+     
+    //  cout << "DEBUG: Creating adc2fc graph..." << endl;
+     adc2fc = new TGraph();
+     if (!adc2fc) {
+       cerr << "ERROR: Failed to create adc2fc graph" << endl;
+       exit(1);
+     }
+     adc2fc->SetName("adc2fc");
+     adc2fc->SetTitle("ADC to FC conversion");
+    //  cout << "DEBUG: adc2fc created successfully" << endl;
+     
+     cout << "DEBUG: Creating fc2adc graph..." << endl;
+     fc2adc = new TGraph();
+     if (!fc2adc) {
+       cerr << "ERROR: Failed to create fc2adc graph" << endl;
+       exit(1);
+     }
+     fc2adc->SetName("fc2adc");
+     fc2adc->SetTitle("FC to ADC conversion");
+     cout << "DEBUG: fc2adc created successfully" << endl;
+     
+     // Repopulate the conversion graphs
+     cout << "DEBUG: Repopulating conversion graphs..." << endl;
+     for (int i = 0; i < 256; i++){
+       adc2fc->SetPoint(i, ADC_vals[i], fC_vals[i]);
+       fc2adc->SetPoint(i, fC_vals[i], ADC_vals[i]);
+     }
+     cout << "DEBUG: Conversion graphs repopulated" << endl;
+     
+   } catch (...) {
+     cout << "ERROR: Exception caught during histogram recreation!" << endl;
+     exit(1);
+   }
+   
+   cout << "Opening new file for LS " << currentLS << ": " << newFileName << endl;
+   cout << "DEBUG: LS transition completed successfully" << endl;
+   
+      // Reset entry counter for new LS
+      entry = 0;
+    }
+    
+ cout << "DEBUG: Processing event " << i << " for LS " << LS << ", entry " << entry << endl;
+ 
     if(Nentry>1 && i==fillnextentry){
       fillnextentry += nentries[entry];
       entry++;
       cout << "Filling entry " << entry << " after event " << i << endl;
     }
-    qiedigi->GetEntry(i);
     evtype = eventtype; // UChar_t -> Int conversion
     if(evtype!=1) continue; // PED events only
     doneevents++;
     if(doneevents==maxevents+1) break;
 
+//  cout << "DEBUG: About to process subdets for event " << i << endl;
     for (auto const& subdet : subdets){
+  //  cout << "DEBUG: Processing subdet " << subdet << " for event " << i << endl;
       if(subdet=="HB") N = nDigiHB;
       else if(subdet=="HE") N = nDigiHE;
       else if(subdet=="HF") N = nDigiHF;
       else if(subdet=="HO") N = nDigiHO;
+  //  cout << "DEBUG: Subdet " << subdet << " has " << N << " digis" << endl;
       for(int j=0; j<N; j++){
+     if (j % 1000 == 0 && j > 0) {
+      //  cout << "DEBUG: Processing digi " << j << "/" << N << " for subdet " << subdet << endl;
+     }
         size = "";
         if(subdet=="HB"){
           ieta = DigiHB_ieta[j];
@@ -377,17 +595,47 @@ int main(int argc, char *argv[])
           depth = DigiHO_depth[j];
         }
         if (ieta==0) continue;
-        //if (histarrayFC.find(subdet.first) == histarrayFC.end()) histarrayFC[subdet.first];
-        //if (histarrayFC[subdet.first].find(size) == histarrayFC[subdet.first].end()) histarrayFC[subdet.first][size];
-        //if (histarrayFC[subdet.first][size].find(ieta) == histarrayFC[subdet.first][size].end()) histarrayFC[subdet.first][size][ieta];
-        //if (histarrayFC[subdet.first][size][ieta].find(iphi) == histarrayFC[subdet.first][size][ieta].end()) histarrayFC[subdet.first][size][ieta][iphi];
+        
+     // Debug histogram creation
+    //  cout << "DEBUG: About to check/create histogram for " << subdet << size << " ieta=" << ieta << " iphi=" << iphi << " depth=" << depth << " entry=" << entry << endl;
         if (histarrayFC[subdet][size][ieta][iphi][depth].find(entry) == histarrayFC[subdet][size][ieta][iphi][depth].end()){
-          //if(entry==13) cout << "create " << subdet << ", " << size << ", " << ieta << ", " << iphi << ", " << depth << ", " << entry << endl;
-          histarrayFC[subdet][size][ieta][iphi][depth][entry] = new TH1F(("hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_FC").c_str(), "Pedestal per Channel; fC; Entries", 10000, 0, 1000); // TODO
-          histarrayADC[subdet][size][ieta][iphi][depth][entry] = new TH1F(("hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_ADC").c_str(), "Pedestal per Channel; ADC; Entries", 960, 0, 32);
+      //  cout << "DEBUG: Creating new histograms for " << subdet << size << " ieta=" << ieta << " iphi=" << iphi << " depth=" << depth << " entry=" << entry << endl;
+       
+       // Check if file is still valid before creating histograms
+       if (!ofile || ofile->IsZombie()) {
+         cerr << "ERROR: Output file is invalid when trying to create histogram!" << endl;
+         exit(1);
+       }
+       
+       try {
+         string fcHistName = "hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_FC";
+         string adcHistName = "hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_ADC";
+         
+        //  cout << "DEBUG: Creating FC histogram: " << fcHistName << endl;
+           histarrayFC[subdet][size][ieta][iphi][depth][entry] = new TH1F(("hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_FC").c_str(), "Pedestal per Channel; fC; Entries", 10000, 0, 1000);
+         
+         if (!histarrayFC[subdet][size][ieta][iphi][depth][entry]) {
+           cerr << "ERROR: Failed to create FC histogram!" << endl;
+           exit(1);
+         }
+         
+        //  cout << "DEBUG: Creating ADC histogram: " << adcHistName << endl;
+           histarrayADC[subdet][size][ieta][iphi][depth][entry] = new TH1F(("hist_"+runid+"_subdet"+subdet+size+"_ieta"+to_string(ieta)+"_iphi"+to_string(iphi)+"_depth"+to_string(depth)+"_"+to_string(entry)+"_ADC").c_str(), "Pedestal per Channel; ADC; Entries", 960, 0, 32);
+         
+         if (!histarrayADC[subdet][size][ieta][iphi][depth][entry]) {
+           cerr << "ERROR: Failed to create ADC histogram!" << endl;
+           exit(1);
+         }
+         
+        //  cout << "DEBUG: Successfully created histograms" << endl;
+       } catch (...) {
+         cerr << "ERROR: Exception caught during histogram creation!" << endl;
+         exit(1);
+       }
         }
 
         if(subdet=="HB"){
+      //  cout << "DEBUG: Processing HB digi " << j << endl;
           fcsum = (DigiHB_fc0[j]+DigiHB_fc1[j]+DigiHB_fc2[j]+DigiHB_fc3[j]+DigiHB_fc4[j]+DigiHB_fc5[j]+DigiHB_fc6[j]+DigiHB_fc7[j]) / 8.0;
           adcsum = (DigiHB_adc0[j]+DigiHB_adc1[j]+DigiHB_adc2[j]+DigiHB_adc3[j]+DigiHB_adc4[j]+DigiHB_adc5[j]+DigiHB_adc6[j]+DigiHB_adc7[j]) / 8.0;
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHB_capid0[j]][entry].push_back(DigiHB_fc0[j]);
@@ -399,6 +647,12 @@ int main(int argc, char *argv[])
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHB_capid6[j]][entry].push_back(DigiHB_fc6[j]);
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHB_capid7[j]][entry].push_back(DigiHB_fc7[j]);
           rawIDarray[subdet][ieta][iphi][depth] = DigiHB_rawId[j];
+       
+       // Check ADCvsFC before filling
+       if (!ADCvsFC) {
+         cerr << "ERROR: ADCvsFC is null when trying to fill!" << endl;
+         exit(1);
+       }
           ADCvsFC->Fill(DigiHB_adc0[j], DigiHB_fc0[j]);
           ADCvsFC->Fill(DigiHB_adc1[j], DigiHB_fc1[j]);
           ADCvsFC->Fill(DigiHB_adc2[j], DigiHB_fc2[j]);
@@ -408,6 +662,7 @@ int main(int argc, char *argv[])
           ADCvsFC->Fill(DigiHB_adc6[j], DigiHB_fc6[j]);
           ADCvsFC->Fill(DigiHB_adc7[j], DigiHB_fc7[j]);
         }else if (subdet=="HE"){
+      //  cout << "DEBUG: Processing HE digi " << j << endl;
           fcsum = (DigiHE_fc0[j]+DigiHE_fc1[j]+DigiHE_fc2[j]+DigiHE_fc3[j]+DigiHE_fc4[j]+DigiHE_fc5[j]+DigiHE_fc6[j]+DigiHE_fc7[j]) / 8.0;
           adcsum = (DigiHE_adc0[j]+DigiHE_adc1[j]+DigiHE_adc2[j]+DigiHE_adc3[j]+DigiHE_adc4[j]+DigiHE_adc5[j]+DigiHE_adc6[j]+DigiHE_adc7[j]) / 8.0;
           if(ieta==-19 and iphi==16 and depth==5){ // There's a dead CapID (0) in this channel! Ignore it
@@ -435,6 +690,12 @@ int main(int argc, char *argv[])
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHE_capid6[j]][entry].push_back(DigiHE_fc6[j]);
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHE_capid7[j]][entry].push_back(DigiHE_fc7[j]);
           rawIDarray[subdet][ieta][iphi][depth] = DigiHE_rawId[j];
+       
+       // Check ADCvsFC before filling
+       if (!ADCvsFC) {
+         cerr << "ERROR: ADCvsFC is null when trying to fill!" << endl;
+         exit(1);
+       }
           ADCvsFC->Fill(DigiHE_adc0[j], DigiHE_fc0[j]);
           ADCvsFC->Fill(DigiHE_adc1[j], DigiHE_fc1[j]);
           ADCvsFC->Fill(DigiHE_adc2[j], DigiHE_fc2[j]);
@@ -444,6 +705,7 @@ int main(int argc, char *argv[])
           ADCvsFC->Fill(DigiHE_adc6[j], DigiHE_fc6[j]);
           ADCvsFC->Fill(DigiHE_adc7[j], DigiHE_fc7[j]);
         }else if (subdet=="HF"){
+      //  cout << "DEBUG: Processing HF digi " << j << endl;
           fcsum = (DigiHF_fc0[j]+DigiHF_fc1[j]+DigiHF_fc2[j]) / 3.0;
           adcsum = (DigiHF_adc0[j]+DigiHF_adc1[j]+DigiHF_adc2[j]) / 3.0;
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHF_capid0[j]][entry].push_back(DigiHF_fc0[j]);
@@ -451,6 +713,7 @@ int main(int argc, char *argv[])
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHF_capid2[j]][entry].push_back(DigiHF_fc2[j]);
           rawIDarray[subdet][ieta][iphi][depth] = DigiHF_rawId[j];
         }else if (subdet=="HO"){
+      //  cout << "DEBUG: Processing HO digi " << j << endl;
           fcsum = (DigiHO_fc0[j]+DigiHO_fc1[j]+DigiHO_fc2[j]+DigiHO_fc3[j]+DigiHO_fc4[j]+DigiHO_fc5[j]+DigiHO_fc6[j]+DigiHO_fc7[j]+DigiHO_fc8[j]+DigiHO_fc9[j]) / 10.0;
           adcsum = (DigiHO_adc0[j]+DigiHO_adc1[j]+DigiHO_adc2[j]+DigiHO_adc3[j]+DigiHO_adc4[j]+DigiHO_adc5[j]+DigiHO_adc6[j]+DigiHO_adc7[j]+DigiHO_adc8[j]+DigiHO_adc9[j]) / 10.0;
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHO_capid0[j]][entry].push_back(DigiHO_fc0[j]);
@@ -465,35 +728,64 @@ int main(int argc, char *argv[])
           CapIDarrayFC[subdet][ieta][iphi][depth][DigiHO_capid9[j]][entry].push_back(DigiHO_fc9[j]);
           rawIDarray[subdet][ieta][iphi][depth] = DigiHO_rawId[j];
         }
+     
+     // Check histograms before filling
+     if (!histarrayFC[subdet][size][ieta][iphi][depth][entry]) {
+       cerr << "ERROR: FC histogram is null when trying to fill!" << endl;
+       exit(1);
+     }
+     if (!histarrayADC[subdet][size][ieta][iphi][depth][entry]) {
+       cerr << "ERROR: ADC histogram is null when trying to fill!" << endl;
+       exit(1);
+     }
+     
         histarrayFC[subdet][size][ieta][iphi][depth][entry]->Fill(fcsum);
         histarrayADC[subdet][size][ieta][iphi][depth][entry]->Fill(adcsum);
+    //  cout << "DEBUG: Successfully filled histograms for digi " << j << endl;
       }
+  //  cout << "DEBUG: Completed processing subdet " << subdet << " for event " << i << endl;
     }
+//  cout << "DEBUG: Completed processing all subdets for event " << i << endl;
+  }
 
-    if((Nentry>1 && i+1==fillnextentry) || (i+1==ntot)){
-      //cout << "Filling temp vectors" << endl;
-      for (auto const& subdet : subdets){
-        for (auto const& siz : histarrayFC[subdet]){
-          //if(siz.first=="_sipmSmall") size = "Small";
-          //if(siz.first=="_sipmLarge") size = "Large";
-          for (auto const& eta : histarrayFC[subdet][siz.first]){
-            for (auto const& phi : histarrayFC[subdet][siz.first][eta.first]){
-              for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
-                //if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].find(1) != histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].end()){
-                if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].count(entry)){
-                  if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][entry]->GetEntries() > 0){
-                    float mymeanadc=0.0, myrmsadc=0.0, mymeanfc=0.0, myrmsfc=0.0;
-                    mymeanadc = histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][entry]->GetMean();
-                    myrmsadc = histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][entry]->GetRMS();
-                    mymeanfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][entry]->GetMean();
-                    myrmsfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][entry]->GetRMS();
-                    histarrayADCtemp[subdet][siz.first][eta.first][phi.first][dep.first].push_back(make_pair(mymeanadc, myrmsadc));
-                    histarrayFCtemp[subdet][siz.first][eta.first][phi.first][dep.first].push_back(make_pair(mymeanfc, myrmsfc));
-                    //cout << "Filled" << endl;
-                    if(!((Nentry/2)+1==entry)){ // Save these later
-                      delete histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][entry];
-                      delete histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][entry];
-                    } 
+  // Write final LS
+  if (ofile) {
+    cout << "Writing final LS " << currentLS << " file..." << endl;
+    ofile->cd();
+    // Write histograms with safety checks
+    cout << "DEBUG: Writing final histograms for LS " << currentLS << endl;
+    int histCount = 0;
+    for (auto const& subdet : subdets){
+      if (histarrayFC.find(subdet) == histarrayFC.end()) {
+        cout << "DEBUG: Final - Subdet " << subdet << " not found in histarrayFC" << endl;
+        continue;
+      }
+      for (auto const& siz : histarrayFC[subdet]){
+        if (histarrayFC[subdet].find(siz.first) == histarrayFC[subdet].end()) continue;
+        for (auto const& eta : histarrayFC[subdet][siz.first]){
+          if (histarrayFC[subdet][siz.first].find(eta.first) == histarrayFC[subdet][siz.first].end()) continue;
+          for (auto const& phi : histarrayFC[subdet][siz.first][eta.first]){
+            if (histarrayFC[subdet][siz.first][eta.first].find(phi.first) == histarrayFC[subdet][siz.first][eta.first].end()) continue;
+            for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
+              if (histarrayFC[subdet][siz.first][eta.first][phi.first].find(dep.first) == histarrayFC[subdet][siz.first][eta.first][phi.first].end()) continue;
+              int targetEntry = (Nentry/2)+1;
+              if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].end()){
+                TH1F* hfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
+                if (hfc && hfc->GetEntries() > 0) {
+                  hfc->Write();
+                  histCount++;
+                }
+                // Check if ADC histogram exists  
+                if (histarrayADC.find(subdet) != histarrayADC.end() &&
+                    histarrayADC[subdet].find(siz.first) != histarrayADC[subdet].end() &&
+                    histarrayADC[subdet][siz.first].find(eta.first) != histarrayADC[subdet][siz.first].end() &&
+                    histarrayADC[subdet][siz.first][eta.first].find(phi.first) != histarrayADC[subdet][siz.first][eta.first].end() &&
+                    histarrayADC[subdet][siz.first][eta.first][phi.first].find(dep.first) != histarrayADC[subdet][siz.first][eta.first][phi.first].end() &&
+                    histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first].end()) {
+                  TH1F* hadc = histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
+                  if (hadc && hadc->GetEntries() > 0) {
+                    hadc->Write();
+                    histCount++;
                   }
                 }
               }
@@ -502,7 +794,22 @@ int main(int argc, char *argv[])
         }
       }
     }
-
+    cout << "DEBUG: Final - Wrote " << histCount << " histograms" << endl;
+    if (ADCvsFC && ADCvsFC->GetEntries() > 0) {
+      ADCvsFC->Write();
+      cout << "DEBUG: Final - Wrote ADCvsFC histogram" << endl;
+    }
+    if (adc2fc) {
+      adc2fc->Write();
+      cout << "DEBUG: Final - Wrote adc2fc graph" << endl;
+    }
+    if (fc2adc) {
+      fc2adc->Write();
+      cout << "DEBUG: Final - Wrote fc2adc graph" << endl;
+    }
+    ofile->Close();
+    cout << "DEBUG: Final file closed successfully" << endl;
+    delete ofile;
   }
 
   // Get Mean/RMS:
@@ -594,7 +901,7 @@ int main(int argc, char *argv[])
   cout << "Writing table..." << endl;
 
   ofstream tablefile;
-  tablefile.open("Table_"+runid+"_"+floatday+".2023.txt");
+  tablefile.open("Table_"+runid+"_"+floatday+".2025.txt");
   tablefile << setw(8) << "SubDet" << setw(8) << "SiPM" << setw(8) << "ieta" << setw(8) << "iphi" << setw(8) << "depth" << setw(12) << "ADC Mean" << setw(12) << "ADC RMS" << setw(12) << "fC Mean" << setw(12) << "fC RMS" << "\n";
   for (auto const& subdet : subdets){
     for (auto const& siz : histarrayFCfull[subdet]){
@@ -621,8 +928,8 @@ int main(int argc, char *argv[])
   float CapIDMean[4], CapIDStd[4];
   ofstream DPGfile;
   ofstream DPGfileWidth;
-  DPGfile.open("PedestalTable_"+runid+"_"+floatday+".2023.txt");
-  DPGfileWidth.open("PedestalTableWidth_"+runid+"_"+floatday+".2023.txt");
+  DPGfile.open("PedestalTable_"+runid+"_"+floatday+".2025.txt");
+  DPGfileWidth.open("PedestalTableWidth_"+runid+"_"+floatday+".2025.txt");
   DPGfile << "# Unit is fC" << "\n";
   DPGfile << "#" << setw(16) << "ieta" << setw(16) << "iphi" << setw(16) << "depth" << setw(16) << "SubDet" << setw(12) << "CapId0" << setw(12) << "CapId1" << setw(12) << "CapId2" << setw(12) << "CapId3" << setw(12) << "WidthId0" << setw(12) << "WidthId1" << setw(12) << "WidthId2" << setw(12) << "WidthId3" << setw(11) << "RawId" << "\n";
   DPGfileWidth << "# Unit is fC^2" << "\n";
@@ -641,6 +948,21 @@ int main(int argc, char *argv[])
               pedmean = pedsum / CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capid].size();
               pedsqsum = std::inner_product(CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capid].begin(), CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capid].end(), CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capid].begin(), 0.0);
               pedstd = sqrt(pedsqsum / CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capid].size() - pedmean * pedmean);
+            }else{ // For HF, one CapID is empty: Get average of other entries
+              //cout << "Averaging: det=" << subdet << ", eta=" << eta.first << ", phi=" << phi.first << ", depth=" << dep.first << ", capid=" << capid << endl;
+              pedsum = 0.0;
+              pedsqsum = 0.0;
+              pedsize = 0;
+              for (int capidtemp=0; capidtemp<4; capidtemp++) { // for (auto const& capidtemp : CapIDarrayFC[subdet][eta.first][phi.first][dep.first]){
+                if (!CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].empty()){
+                  pedsum = pedsum + std::accumulate(CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].begin(), CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].end(), 0.0);
+                  pedsqsum = pedsqsum + std::inner_product(CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].begin(), CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].end(), CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].begin(), 0.0);
+                  pedsize = pedsize + CapIDarrayFC[subdet][eta.first][phi.first][dep.first][capidtemp].size();
+                }
+              }
+              // if(pedsize==0) break; // No CapID has entries: It's missing channel! Fill below by interpolation. (But code shouldn't pass through here, because it wouldn't even enter the capid loop above.)
+              pedmean = pedsum / pedsize;
+              pedstd = sqrt(pedsqsum / pedsize - pedmean * pedmean);
             }else{ // For HF, one CapID is empty: Get average of other entries
               //cout << "Averaging: det=" << subdet << ", eta=" << eta.first << ", phi=" << phi.first << ", depth=" << dep.first << ", capid=" << capid << endl;
               pedsum = 0.0;
@@ -677,11 +999,13 @@ int main(int argc, char *argv[])
           DPGfile << "\n";
           DPGfileWidth << setw(11) << hex << rawIDarray[subdet][eta.first][phi.first][dep.first];
           DPGfileWidth << "\n";
-          CheckMissing[subdet][eta.first][phi.first][dep.first] = 0;
         }
       }
     }
   }
+  DPGfile.close();
+  DPGfileWidth.close();
+
 
   // Now get values for missing channels: Average over all (available) adjacent eta and phi +/- 1
   int myeta, myphi;
@@ -796,7 +1120,7 @@ int main(int argc, char *argv[])
   cout << "Writing xml..." << endl;
 
   ofstream xmlfile;
-  xmlfile.open(floatday+".2023.xml");
+  xmlfile.open(floatday+".2025.xml");
   //string tag = "hb12-13_he8_hf0_ho11_v14";
   string tag = floatday+"_MeanPlus"+StrXtimesRMS+"RMS";
   auto MakeNewBrick = [&xmlfile](int crate, int slot, int elements, string tag){
@@ -973,7 +1297,7 @@ int main(int argc, char *argv[])
   for(int crate: HFcrateVec){
     for(int slot=1; slot<13; slot++){
       MakeNewBrick(crate, slot, 96, tag);
-      xmlfile << "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
+      xmlfile << "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0";
       EndBrick();
     }
   }
@@ -997,32 +1321,6 @@ int main(int argc, char *argv[])
   ////
 
   //} // end if(!WholeRun)
-
-  cout << "Saving results..." << endl;
-
-  ofile->cd();
-
-  for (auto const& subdet : subdets){
-    for (auto const& siz : histarrayFC[subdet]){
-      for (auto const& eta : histarrayFC[subdet][siz.first]){
-        for (auto const& phi : histarrayFC[subdet][siz.first][eta.first]){
-          for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
-            if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].count((Nentry/2)+1)){
-              //cout << subdet << ", " << siz.first << ", " << eta.first << ", " << phi.first << ", " << dep.first << ", " << (Nentry/2)+1 << " -> " << histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][(Nentry/2)+1]->GetEntries() << endl;
-              histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][(Nentry/2)+1]->Write();
-              histarrayADC[subdet][siz.first][eta.first][phi.first][dep.first][(Nentry/2)+1]->Write();
-            }
-          }
-        }
-      }
-    }
-  }
-  ADCvsFC->Write();
-  adc2fc->Write();
-  fc2adc->Write();
-
-  cout << "Finished writing." << endl;
-  ofile->Close();
 
   cout << "End Job." << endl;
   return 0;
