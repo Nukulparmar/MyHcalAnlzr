@@ -71,14 +71,14 @@ echo "Changed to directory: $(pwd)"
 cmsenv
 ls -lrth
 
-# echo "running MakeSmall.py"
-# time python3 MakeSmall.py ${eos_out_file} --debug
+echo "running MakeSmall.py"
+time python3 MakeSmall.py ${eos_out_file} --debug
 
-# echo "Running macro_nano with input file: $fname"
-# time ./macro_nano ${fname} 1
-echo "running digi_process.py with run: $run and input file: $fname"
-time python3 digi_process.py ${run} WholeRun ${fname}
+echo "Running macro_nano with input file: $fname"
+time ./macro_nano ${fname} 1
+# echo "running digi_process.py with run: $run and input file: $fname" # Its better to run digi_process.py locally to avoid overwriting of SaveFile.txt
+# time python3 digi_process.py ${run} WholeRun ${fname}
 
-ls -lrth
+# ls -lrth
 
 echo "All done for run ${run}, file ${fname}"

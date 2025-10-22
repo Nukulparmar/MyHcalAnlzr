@@ -15,7 +15,6 @@ JOB_SCRIPT = "HcalNano_Template_condor.sh"  # The script to run for condor jobs
 CMSSW_VERSION= "CMSSW_15_0_6"
 # TMP_PATH = "/tmp/nparmar/"  
 TOTAL_EVENTS = -1  # Total events to process per job in condor submission
-ifDebug = True  # If True, print debug information # TODO : print only when needed
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -325,7 +324,7 @@ def do_digi_process(files, run):
         os.system('mv *'+fname+'* WholeRunOutput_'+run)
         print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
     print("DEBUG: Finished running digi_process.py for all files and running make_plots.sh")
-    make_plots(run)
+    
 
 def create_tarball_current_dir(tar_name="MyHcalAnlzr.tar.gz"):
     """
@@ -409,7 +408,7 @@ def main():
     
     # Configuration
     blacklist_file = ["244aa98d-1bc6-4c3f-bf02-36032473b104.root"]
-    whitelist_file = ["3c982479-12d1-407c-8399-67b38c82f709.root"]
+    whitelist_file = []#"3c982479-12d1-407c-8399-67b38c82f709.root"]
     
     args = parse_arguments()
     # Parse date
