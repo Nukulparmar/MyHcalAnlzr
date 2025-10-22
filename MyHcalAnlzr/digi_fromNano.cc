@@ -22,6 +22,7 @@
 
 using namespace std;
 
+const string outdir = "/eos/user/n/nparmar/HCAL/macro_nano_output/";
 int main(int argc, char *argv[])
 {
   /*if(argc!=6){
@@ -115,8 +116,8 @@ int main(int argc, char *argv[])
   float DigiHB_pedestalfc4[9072], DigiHB_pedestalfc5[9072], DigiHB_pedestalfc6[9072], DigiHB_pedestalfc7[9072];
   float DigiHB_fc0[9072], DigiHB_fc1[9072], DigiHB_fc2[9072], DigiHB_fc3[9072];
   float DigiHB_fc4[9072], DigiHB_fc5[9072], DigiHB_fc6[9072], DigiHB_fc7[9072];
-  float DigiHB_adc0[9072], DigiHB_adc1[9072], DigiHB_adc2[9072], DigiHB_adc3[9072];
-  float DigiHB_adc4[9072], DigiHB_adc5[9072], DigiHB_adc6[9072], DigiHB_adc7[9072];
+  int DigiHB_adc0[9072], DigiHB_adc1[9072], DigiHB_adc2[9072], DigiHB_adc3[9072];
+  int DigiHB_adc4[9072], DigiHB_adc5[9072], DigiHB_adc6[9072], DigiHB_adc7[9072];
   UChar_t DigiHB_capid0[9072], DigiHB_capid1[9072], DigiHB_capid2[9072], DigiHB_capid3[9072];
   UChar_t DigiHB_capid4[9072], DigiHB_capid5[9072], DigiHB_capid6[9072], DigiHB_capid7[9072];
   if (qiedigi->GetBranch("DigiHB_pedestalfc0")) qiedigi->SetBranchAddress("DigiHB_pedestalfc0", &DigiHB_pedestalfc0);
@@ -155,8 +156,8 @@ int main(int argc, char *argv[])
   float DigiHE_pedestalfc4[6768], DigiHE_pedestalfc5[6768], DigiHE_pedestalfc6[6768], DigiHE_pedestalfc7[6768];
   float DigiHE_fc0[6768], DigiHE_fc1[6768], DigiHE_fc2[6768], DigiHE_fc3[6768];
   float DigiHE_fc4[6768], DigiHE_fc5[6768], DigiHE_fc6[6768], DigiHE_fc7[6768];
-  float DigiHE_adc0[6768], DigiHE_adc1[6768], DigiHE_adc2[6768], DigiHE_adc3[6768];
-  float DigiHE_adc4[6768], DigiHE_adc5[6768], DigiHE_adc6[6768], DigiHE_adc7[6768];
+  int DigiHE_adc0[6768], DigiHE_adc1[6768], DigiHE_adc2[6768], DigiHE_adc3[6768];
+  int DigiHE_adc4[6768], DigiHE_adc5[6768], DigiHE_adc6[6768], DigiHE_adc7[6768];
   UChar_t DigiHE_capid0[6768], DigiHE_capid1[6768], DigiHE_capid2[6768], DigiHE_capid3[6768];
   UChar_t DigiHE_capid4[6768], DigiHE_capid5[6768], DigiHE_capid6[6768], DigiHE_capid7[6768];
   if (qiedigi->GetBranch("DigiHE_pedestalfc0")) qiedigi->SetBranchAddress("DigiHE_pedestalfc0", &DigiHE_pedestalfc0);
@@ -193,7 +194,7 @@ int main(int argc, char *argv[])
   if (qiedigi->GetBranch("DigiHE_capid7")) qiedigi->SetBranchAddress("DigiHE_capid7", &DigiHE_capid7);
   float DigiHF_pedestalfc0[3456], DigiHF_pedestalfc1[3456], DigiHF_pedestalfc2[3456];
   float DigiHF_fc0[3456], DigiHF_fc1[3456], DigiHF_fc2[3456];
-  float DigiHF_adc0[3456], DigiHF_adc1[3456], DigiHF_adc2[3456];
+  int DigiHF_adc0[3456], DigiHF_adc1[3456], DigiHF_adc2[3456];
   UChar_t DigiHF_capid0[3456], DigiHF_capid1[3456], DigiHF_capid2[3456];
   if (qiedigi->GetBranch("DigiHF_pedestalfc0")) qiedigi->SetBranchAddress("DigiHF_pedestalfc0", &DigiHF_pedestalfc0);
   if (qiedigi->GetBranch("DigiHF_pedestalfc1")) qiedigi->SetBranchAddress("DigiHF_pedestalfc1", &DigiHF_pedestalfc1);
@@ -213,9 +214,9 @@ int main(int argc, char *argv[])
   float DigiHO_fc0[2160], DigiHO_fc1[2160], DigiHO_fc2[2160], DigiHO_fc3[2160];
   float DigiHO_fc4[2160], DigiHO_fc5[2160], DigiHO_fc6[2160], DigiHO_fc7[2160];
   float DigiHO_fc8[2160], DigiHO_fc9[2160];
-  float DigiHO_adc0[2160], DigiHO_adc1[2160], DigiHO_adc2[2160], DigiHO_adc3[2160];
-  float DigiHO_adc4[2160], DigiHO_adc5[2160], DigiHO_adc6[2160], DigiHO_adc7[2160];  
-  float DigiHO_adc8[2160], DigiHO_adc9[2160];
+  int DigiHO_adc0[2160], DigiHO_adc1[2160], DigiHO_adc2[2160], DigiHO_adc3[2160];
+  int DigiHO_adc4[2160], DigiHO_adc5[2160], DigiHO_adc6[2160], DigiHO_adc7[2160];  
+  int DigiHO_adc8[2160], DigiHO_adc9[2160];
   UChar_t DigiHO_capid0[2160], DigiHO_capid1[2160], DigiHO_capid2[2160], DigiHO_capid3[2160];
   UChar_t DigiHO_capid4[2160], DigiHO_capid5[2160], DigiHO_capid6[2160], DigiHO_capid7[2160];
   UChar_t DigiHO_capid8[2160], DigiHO_capid9[2160];
@@ -266,7 +267,9 @@ int main(int argc, char *argv[])
 
   uint LS;
   qiedigi->SetBranchAddress("luminosityBlock", &LS);
-  if (Whole==1){ runid = runid; }
+  if (Whole==1){ 
+    qiedigi->GetEntry(0);
+    runid = runid; }
   else if (Whole != 0) runid = "Fill"+to_string(Whole);
   
   // Per-LS output file handling
@@ -380,7 +383,8 @@ int main(int argc, char *argv[])
                 if (histarrayFC[subdet][siz.first][eta.first].find(phi.first) == histarrayFC[subdet][siz.first][eta.first].end()) continue;
                 for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
                   if (histarrayFC[subdet][siz.first][eta.first][phi.first].find(dep.first) == histarrayFC[subdet][siz.first][eta.first][phi.first].end()) continue;
-                  int targetEntry = (Nentry/2)+1;
+                  // int targetEntry = (Nentry/2)+1;
+                  int targetEntry = (Nentry > 1) ? (Nentry/2)+1 : 0;
                   if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].end()){
                     TH1F* hfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
                     if (hfc && hfc->GetEntries() > 0) {
@@ -466,7 +470,7 @@ int main(int argc, char *argv[])
       currentLS = LS;
       floatday = "LS"+to_string(LS)+"_"+originalFloatday;
       cout << "Opening new file for LS " << currentLS << ": hist_CalibOutput_" << runid << "_" << floatday << ".root" << endl;
-   string newFileName = "hist_CalibOutput_"+runid+"_"+floatday+".root";
+   string newFileName = outdir + "hist_CalibOutput_"+runid+"_"+floatday+".root";
    cout << "DEBUG: About to create new file: " << newFileName << endl;
    
    // Try to create the new file with error handling
@@ -768,7 +772,7 @@ int main(int argc, char *argv[])
             if (histarrayFC[subdet][siz.first][eta.first].find(phi.first) == histarrayFC[subdet][siz.first][eta.first].end()) continue;
             for (auto const& dep : histarrayFC[subdet][siz.first][eta.first][phi.first]){
               if (histarrayFC[subdet][siz.first][eta.first][phi.first].find(dep.first) == histarrayFC[subdet][siz.first][eta.first][phi.first].end()) continue;
-              int targetEntry = (Nentry/2)+1;
+              int targetEntry = (Nentry > 1) ? (Nentry/2)+1 : 0;
               if (histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].find(targetEntry) != histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first].end()){
                 TH1F* hfc = histarrayFC[subdet][siz.first][eta.first][phi.first][dep.first][targetEntry];
                 if (hfc && hfc->GetEntries() > 0) {
