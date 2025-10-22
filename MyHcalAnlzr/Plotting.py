@@ -244,18 +244,58 @@ for title in grdict:
     subdet = grdict[title][1]
     parts = [trend for trend in trends if trend.startswith(subdet) and trend.endswith(unit) and "depth" not in trend]
     # Manually sort:
-    if parts == ['HB_sipmLarge_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmLarge_phi,1,72_'+unit, 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmLarge_phi,36,37_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmSmall_phi,1,72_'+unit, 'HB_sipmSmall_phi,18,19_'+unit, 'HB_sipmSmall_phi,36,37_'+unit]:
-      parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmLarge_phi,1,72_'+unit, 'HB_sipmSmall_phi,1,72_'+unit, 'HB_sipmLarge_phi,36,37_'+unit, 'HB_sipmSmall_phi,36,37_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit] # , 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmSmall_phi,18,19_'+unit
-    if parts == ['HE_sipmLarge_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmSmall_phi,18,19_'+unit, 'HE_sipmSmall_phi,36,37_'+unit]:
-      parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_phi,36,37_'+unit] # , 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmSmall_phi,18,19_'+unit
+    # if parts == ['HB_sipmLarge_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmLarge_phi,1,72_'+unit, 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmLarge_phi,36,37_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmSmall_phi,1,72_'+unit, 'HB_sipmSmall_phi,18,19_'+unit, 'HB_sipmSmall_phi,36,37_'+unit]:
+    #   parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmLarge_phi,1,72_'+unit, 'HB_sipmSmall_phi,1,72_'+unit, 'HB_sipmLarge_phi,36,37_'+unit, 'HB_sipmSmall_phi,36,37_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit] # , 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmSmall_phi,18,19_'+unit
+    # if parts == ['HE_sipmLarge_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmSmall_phi,18,19_'+unit, 'HE_sipmSmall_phi,36,37_'+unit]:
+    #   parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_phi,36,37_'+unit] # , 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmSmall_phi,18,19_'+unit
     
     thismin, thismax = MinMaxAxis((limits[trend+meanrms][0] for trend in parts), (limits[trend+meanrms][1] for trend in parts), 0.5)
-    if subdet=="HB": color = ROOT.kBlue
-    elif subdet=="HE": color = ROOT.kGreen
+    # if subdet=="HB": color = ROOT.kBlue
+    # elif subdet=="HE": color = ROOT.kGreen
+    # elif subdet=="HF": color = ROOT.kRed
+    # elif subdet=="HO": color = ROOT.kBlack
+    if subdet=="HB":
+        parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit,  'HB_sipmLarge_HBP14RM1_'+unit,'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit, 'HB_sipmLarge_HBM04RM3_'+unit, 'HB_sipmSmall_HBM04RM3_'+unit, 'HB_sipmLarge_HBM12RM3_'+unit, 'HB_sipmSmall_HBM12RM3_'+unit]
+        color = ROOT.kBlue
+    elif subdet=="HE":
+        parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit]
+        color = ROOT.kGreen
     elif subdet=="HF": color = ROOT.kRed
-    elif subdet=="HO": color = ROOT.kBlack
+    elif subdet=="HO":
+        parts = ['HO_'+unit, 'HO_HO0_'+unit, 'HO_HO1_'+unit, 'HO_HO2_'+unit]
+        color = ROOT.kBlack
+
     lowedge = 999
     upedge = 0
+    # for j,part in enumerate(parts):
+    #   if gr[part][meanrms] is None: continue
+    #   if "HB" in part or "HE" in part:
+    #     if "Large" in part: color = ROOT.kBlue
+    #     if "Small" in part: color = ROOT.kGreen
+    #   if "phi,1," in part:
+    #     tcolor = color+3
+    #     marker = 22
+    #     line = 4
+    #   elif "phi,36," in part:
+    #     tcolor = color-5
+    #     marker = 23
+    #     line = 5
+    #   elif "phi,18," in part:
+    #     tcolor = color-7
+    #     marker = 20
+    #     line = 6
+    #   elif "HBP14RM1" in part:
+    #     tcolor = color+4
+    #     marker = 33
+    #     line = 7
+    #   elif "HBM09RM3" in part:
+    #     tcolor = color+4
+    #     marker = 34
+    #     line = 8
+    #   else:
+    #     tcolor = color
+    #     marker = 21
+    #     line = 1
     for j,part in enumerate(parts):
       if gr[part][meanrms] is None: continue
       if "HB" in part or "HE" in part:
@@ -269,7 +309,7 @@ for title in grdict:
         tcolor = color-5
         marker = 23
         line = 5
-      elif "phi,18," in part:
+      elif "phi,12," in part:
         tcolor = color-7
         marker = 20
         line = 6
@@ -281,10 +321,31 @@ for title in grdict:
         tcolor = color+4
         marker = 34
         line = 8
+      elif "HBM04RM3" in part:
+        tcolor = color+4
+        marker = 35
+        line = 9
+      elif "HBM12RM3" in part:
+        tcolor = color+4
+        marker = 36
+        line = 10
+      elif "HO0" in part:
+        tcolor = color+6
+        marker = 22
+        line = 4
+      elif "HO1" in part:
+        tcolor = color+2
+        marker = 23
+        line = 5
+      elif "HO2" in part:
+        tcolor = color+8
+        marker = 24
+        line = 6
       else:
         tcolor = color
         marker = 21
         line = 1
+
       gr[part][meanrms].SetLineColor(tcolor)
       gr[part][meanrms].SetLineStyle(line)
       gr[part][meanrms].SetMarkerStyle(marker)
@@ -310,14 +371,28 @@ for title in grdict:
       upedge = max(upedge, gr[part][meanrms].GetXaxis().GetBinUpEdge(gr[part][meanrms].GetXaxis().GetLast()))
       # Legend
       sizename = "PMT" if subdet=="HF" else "SiPM"
+      # if subdet in ["HB", "HE"]:
+      #   if "Small" in part: sizename = "Small SiPM"
+      #   elif "Large" in part: sizename = "Large SiPM"
+      #   if "phi,36," in part: sizename += ", iphi in [36,37]"
+      #   elif "phi,18," in part: sizename += ", iphi in [18,19]"
+      #   elif "phi,1," in part: sizename += ", iphi in [72,1]"
+      #   elif "HBP14RM1" in part: sizename += ", HBP14 RM1"
+      #   elif "HBM09RM3" in part: sizename += ", HBM09 RM3"
       if subdet in ["HB", "HE"]:
         if "Small" in part: sizename = "Small SiPM"
         elif "Large" in part: sizename = "Large SiPM"
-        if "phi,36," in part: sizename += ", iphi in [36,37]"
-        elif "phi,18," in part: sizename += ", iphi in [18,19]"
-        elif "phi,1," in part: sizename += ", iphi in [72,1]"
-        elif "HBP14RM1" in part: sizename += ", HBP14 RM1"
-        elif "HBM09RM3" in part: sizename += ", HBM09 RM3"
+        if "phi,36," in part: sizename += ", iphi in [36,37]" 
+        elif "phi,18," in part: sizename += ", iphi in [18,19]" 
+        elif "phi,1," in part: sizename += ", iphi in [72,1]" 
+        elif "HBP14RM1" in part: sizename += ", HBP14 RM1" 
+        elif "HBM09RM3" in part: sizename += ", HBM09 RM3" 
+        elif "HBM04RM3" in part: sizename += ", HBM04 RM3"
+        elif "HBM12RM3" in part: sizename += ", HBM12 RM3"
+      if subdet=="HO":
+        if "HO0" in part: sizename = "0"
+        elif "HO1" in part: sizename = "1"
+        elif "HO2" in part: sizename = "2"
       label = subdet + " " + sizename + ""
       legend[-1].AddEntry(gr[part][meanrms], label, "pl")
     # Vertical lines at 1st of every month
