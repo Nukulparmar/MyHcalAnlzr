@@ -5,6 +5,7 @@ import time
 import json
 import ROOT
 import argparse
+from MakeSmall import MakeSmall
 
 # The global run setup is not tested yet. The local path is working with the run files stored in eos with path + /Run{run}/* format
 # The global setup can be check in the FindDataesetToRun_old.py script
@@ -28,7 +29,8 @@ def parse_arguments():
     parser.add_argument("--run_locally", help="Run the jobs locally instead of condor (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--after_nano", help="Run digi_process.py after making all nano tuples (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--dry", help="Dry run for condor submission (only for WholeRun mode)", action="store_true", default=False)
-    parser.add_argument("--make_small", help="Make the input file smaller by removing unnecessary branches and events", action="store_true", default=False)
+    parser.add_argument("--make_small", help="Make the input file smaller by removing unnecessary branches and events. Running locally, it is already included in the condor jobs", action="store_true", default=False)
+    parser.add_argument("--make_plots", help="Make plots using makePlots.sh script after processing (only for WholeRun mode)", action="store_true", default=False)
     parser.add_argument("--do_digi_process", help="Run digi_process.py script after making nano tuples", action="store_true", default=False)
     args = parser.parse_args()
     # Ensure submit_jobs and after_nano are not both True
@@ -36,37 +38,6 @@ def parse_arguments():
         print("Error: --submit_jobs and --run_locally cannot be used together.")
         sys.exit(1)
     return args
-
-def MakeSmall(path):
-    patht1 = path.replace(".root", "_temp.root")
-    patht2 = path.replace(".root", "_temp2.root")
-    print(f"path: {path}, patht1: {patht1}, patht2: {patht2}")
-    
-    try:
-        tries = 0
-        while tries < 10:
-            # Remove HLT branches and filter non-eventtype 1 events
-            #os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT_*" '+path+':Events '+patht1)
-            print("running rooteventselector ...")
-            os.system('rooteventselector -s "(uMNio_EventType == 1)" -e "HLT*,*RecHit*,DigiHF_ok*,DigiHO_er*,DigiHO_dv*,*Error,*fiber*,*flags,*pedestalfc*,*subdet,*soi,*tdc*,*valid" '+path+':Events '+patht1)
-            # Re-compress
-            print("running haddnano ...")
-            success = os.system('python3 haddnano.py '+patht2+' '+patht1)
-            print(f"Success: {success}")
-            os.system('rm '+patht1)
-            if success==0:
-                break
-            else:
-                os.system('rm '+patht2)
-            tries += 1
-    except OSError: # File not found
-        exit()
-    except KeyboardInterrupt:
-        exit()
-    
-    os.system('mv '+path+' '+path.replace(".root", "_FULL.root"))
-    os.system('mv '+patht2+' '+path)
-    print(f"Finished making file smaller: {path}")
     
 def get_files_from_local_path(path, runs, blacklist_file):
     """Discover files in a local path."""
@@ -172,8 +143,10 @@ def select_file_for_processing(files, whitelist_file, WholeRun, WholeFill):
     else:
         # Get all large files, sort by time, then process the median file
         for f in files:
-            # if whitelist_file and not any([fstr in f for fstr in whitelist_file]): # Skip if not in whitelist
-            #     continue
+            # If a non-empty whitelist is provided, skip files not in it.
+            if whitelist_file and any(str(w).strip() for w in whitelist_file):
+                if not any(fstr in f for fstr in whitelist_file):
+                    continue
             fs = os.path.getsize(f)
             # if fs > 3758096384:  # 3.5G
             if fs > 1000000000:  # 1G
@@ -333,6 +306,10 @@ def process_after_nano_for_WholeRun(largefiles, run, run_locally=False, isdry=Fa
         print(f"Submitted condor jobs for run {run}.")
         sys.exit()
  
+def make_plots(run):
+    """Make plots using makePlots.sh script."""
+    os.system(f"bash makePlots.sh {run}")
+
 def do_digi_process(files, run):
     """Run digi_process.py script."""
     for myfile in files:
@@ -340,14 +317,15 @@ def do_digi_process(files, run):
         os.system('python3 digi_process.py '+run+' WholeRun '+fname)
         print(f"DEBUG: Ran python3 digi_process.py {run} WholeRun {fname}")
 
-        os.system(f'mv hist_CalibOutput_hadd_{run}.root hist_CalibOutput_hadd_{run}.root_old')
+        # os.system(f'mv hist_CalibOutput_hadd_{run}.root hist_CalibOutput_hadd_{run}.root_old')
 
-        os.system(f'hadd -f hist_CalibOutput_hadd_{run}.root hist_CalibOutputSummary_run'+run+'*.root')
-        print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd_{run}.root")
+        # os.system(f'hadd -f hist_CalibOutput_hadd_{run}.root hist_CalibOutputSummary_run'+run+'*.root')
+        # print(f"DEBUG: Merged hist_CalibOutput_hadd_{fname}.root into hist_CalibOutput_hadd_{run}.root")
         
         os.system('mv *'+fname+'* WholeRunOutput_'+run)
         print(f"DEBUG: Moved files matching *{fname}* to WholeRunOutput_{run}")
-    os.system(f"bash makePlots.sh {run}")
+    print("DEBUG: Finished running digi_process.py for all files and running make_plots.sh")
+    make_plots(run)
 
 def create_tarball_current_dir(tar_name="MyHcalAnlzr.tar.gz"):
     """
@@ -388,7 +366,7 @@ def submit_job_for_macro_nano(largefiles, run, isdry=False):
     submit_condor_job(job_content, job_script="macro_nano_condor.sh", jdl_file_name=jdl_file_name, isdry=isdry)
 
 def skim_nano_files(largefiles,run):
-    """Make the input files smaller by removing unnecessary branches and events."""
+    """Make the input files smaller by removing unnecessary branches and events. Doing it locally but it is already done in the condor jobs"""
     files = [largefiles[f] for f in largefiles]
     for myfile in files:
         fname = myfile.split("/")[-1].split(".")[0]
@@ -432,15 +410,7 @@ def main():
     # Configuration
     blacklist_file = ["244aa98d-1bc6-4c3f-bf02-36032473b104.root"]
     whitelist_file = ["3c982479-12d1-407c-8399-67b38c82f709.root"]
-    # blacklist_file = ["0eea9dfb-dfdf-4ce0-964e-42570267a677.root",
-    #                   "]  
-    # files_to_run = ["c9732b3e-7ef4-494d-9b11-351000e5c87b.root","62c86a49-10e1-47ef-9567-8265c9a033da.root",
-    # "168c68f2-6e19-4849-8a99-626b975ee677.root", "a1ea4f6c-3af8-4637-bf74-2b612a04755c.root", "33329bbe-4765-4485-8a0f-b78da77d1960.root",
-    # "08360896-e8a2-4729-ba71-63301a63e0d6.root", "687cbe1b-c456-4c3f-88f4-0d768e2858e4.root"
-    # ]
-    # whitelist_file = files_to_run
-
-
+    
     args = parse_arguments()
     # Parse date
     date = args.date
@@ -522,6 +492,9 @@ def main():
             print("DEBUG: Running digi_process.py ...")
             do_digi_process(files, run)
             print("DEBUG: Finished digi_process")
+        if args.make_plots:
+            print("DEBUG: Making plots using the makePlots.sh...")
+            make_plots(run)
     else:  # WholeFill
         process_whole_fill(largefiles, run, WholeFill, date)
     
