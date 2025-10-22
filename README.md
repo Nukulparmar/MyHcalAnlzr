@@ -19,36 +19,10 @@ FindDatasetToRun  cmsRun    digi_fromNano.cc            digi_process.py         
 ### Step-by-Step Process
 
 1. **Find Dataset**: `FindDatasetToRun.py` discovers files for specified runs/dates
-2. **Create NanoAOD**: `cmsDriver` + `cmsRun` produces HCAL NanoAOD tuples
+2. **Create NanoAOD**: `cmsDriver` + `cmsRun` + `MakeSmall` produces HCAL NanoAOD tuples and skims the NanoAOD
 3. **Extract Pedestals**: `digi_fromNano.cc` creates per-LS histograms (~35 MB each)
 4. **Summarize**: `digi_process.py` generates summary histograms (~103 KB each)
 5. **Plot**: `Plotting.py` creates pedestal trend plots and save them in the eos space.
-
----
-
-## Directory Structure
-
-```
-MyHcalAnlzr/
-├── FindDatasetToRun.py          # Main entry point for dataset discovery and job submission
-├── digi_fromNano.cc             # C++ analyzer: creates per-LS pedestal histograms
-├── digi_process.py              # Python: processes per-LS files → summaries
-├── Plotting.py                  # Plotting and DPG table generation
-├── MakeSmall.py                 # Reduces NanoAOD file size by removing branches
-├── compile.sh                   # Compiles digi_fromNano.cc
-├── HcalNano_Template_condor.sh  # Condor job template
-├── condor_*.jdl                 # Condor submission files
-├── ref_table.txt                # Reference channel table (all HCAL channels)
-├── lmap_complete.txt            # Logical map for HCAL channels
-├── plugins/                     # CMSSW EDAnalyzer plugins
-│   ├── MyHcalAnlzr.cc          # Main HCAL analyzer
-│   └── BuildFile.xml
-├── python/                      # CMSSW Python configs
-│   ├── localrun_singleFull.py
-│   └── localrun_singlePed.py
-├── condor_out_*/                # Condor job outputs
-└── WholeRunOutput_*/            # Per-run output directories
-```
 
 ---
 
@@ -82,7 +56,7 @@ scram b -j 4
 . compile.sh
 ```
 
-### Configure Storage Paths
+### Configure Paths
 
 **Important**: Update these paths to your own storage locations!
 
@@ -132,7 +106,7 @@ Required:
 
 Optional:
   --local_path              Use local path instead of EOS for input
-  --submit_jobs             Submit Condor jobs (WholeRun mode), for the wholeFill currently runs them locally.
+  --submit_jobs             Submit Condor jobs (WholeRun mode), for the wholeFill currently runs them locally - Uses HcalNano_Template_condor.sh.
   --run_locally             Run jobs locally (WholeRun mode) for debugging purposes
   --check_nano_files        Verify NanoAOD files created
   --make_small              Reduce NanoAOD file size to do it locally, already included in the HcalNano_Template_condor.sh when submit_jobs is used.
