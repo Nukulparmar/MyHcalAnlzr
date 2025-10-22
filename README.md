@@ -1,6 +1,6 @@
 # MyHcalAnlzr
 
-This is the setup for LOCAL pedestal studies! For the GLOBAL setup, check out the "hcalNano" branch!
+This is the setup for LOCAL pedestal studies! For the GLOBAL setup, check out the "hcalNano" branch! For the WholeRun / WholeFill setup, check out the "hcalNano_WholeFill" setup. 
 
 
 ## General info
