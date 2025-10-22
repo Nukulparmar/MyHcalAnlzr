@@ -187,11 +187,13 @@ else:
 
 savefilename = 'SaveFile.txt'
 if dowhat == "daysince":
-  xtitle = "Days since 6th April 2023" #"Days since 5th July"
+  xtitle = "Days since 6th April 2025" #"Days since 5th July"
 elif dowhat == "lumi":
   xtitle = "Luminosity [fb^{-1}]"
 elif dowhat == "wholerun":
-  xtitle = "Luminosity section"
+  # fall back to the first argument if that's how you invoked the script.
+  run_for_title = sys.argv[3] if len(sys.argv) > 3 else (sys.argv[1] if len(sys.argv) > 1 else "UNKNOWN")
+  xtitle = f"Luminosity section [Run - {run_for_title}]"
   savefilename = 'SaveFile_'+inputfile+'.txt'
 
 runstoplot = []
@@ -246,6 +248,7 @@ for title in grdict:
       parts = ['HB_sipmLarge_'+unit, 'HB_sipmSmall_'+unit, 'HB_sipmLarge_phi,1,72_'+unit, 'HB_sipmSmall_phi,1,72_'+unit, 'HB_sipmLarge_phi,36,37_'+unit, 'HB_sipmSmall_phi,36,37_'+unit, 'HB_sipmLarge_HBP14RM1_'+unit, 'HB_sipmSmall_HBP14RM1_'+unit, 'HB_sipmLarge_HBM09RM3_'+unit, 'HB_sipmSmall_HBM09RM3_'+unit] # , 'HB_sipmLarge_phi,18,19_'+unit, 'HB_sipmSmall_phi,18,19_'+unit
     if parts == ['HE_sipmLarge_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmSmall_phi,18,19_'+unit, 'HE_sipmSmall_phi,36,37_'+unit]:
       parts = ['HE_sipmLarge_'+unit, 'HE_sipmSmall_'+unit, 'HE_sipmLarge_phi,1,72_'+unit, 'HE_sipmSmall_phi,1,72_'+unit, 'HE_sipmLarge_phi,36,37_'+unit, 'HE_sipmSmall_phi,36,37_'+unit] # , 'HE_sipmLarge_phi,18,19_'+unit, 'HE_sipmSmall_phi,18,19_'+unit
+    
     thismin, thismax = MinMaxAxis((limits[trend+meanrms][0] for trend in parts), (limits[trend+meanrms][1] for trend in parts), 0.5)
     if subdet=="HB": color = ROOT.kBlue
     elif subdet=="HE": color = ROOT.kGreen
