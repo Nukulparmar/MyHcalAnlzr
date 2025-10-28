@@ -267,35 +267,7 @@ for title in grdict:
 
     lowedge = 999
     upedge = 0
-    # for j,part in enumerate(parts):
-    #   if gr[part][meanrms] is None: continue
-    #   if "HB" in part or "HE" in part:
-    #     if "Large" in part: color = ROOT.kBlue
-    #     if "Small" in part: color = ROOT.kGreen
-    #   if "phi,1," in part:
-    #     tcolor = color+3
-    #     marker = 22
-    #     line = 4
-    #   elif "phi,36," in part:
-    #     tcolor = color-5
-    #     marker = 23
-    #     line = 5
-    #   elif "phi,18," in part:
-    #     tcolor = color-7
-    #     marker = 20
-    #     line = 6
-    #   elif "HBP14RM1" in part:
-    #     tcolor = color+4
-    #     marker = 33
-    #     line = 7
-    #   elif "HBM09RM3" in part:
-    #     tcolor = color+4
-    #     marker = 34
-    #     line = 8
-    #   else:
-    #     tcolor = color
-    #     marker = 21
-    #     line = 1
+
     for j,part in enumerate(parts):
       if gr[part][meanrms] is None: continue
       if "HB" in part or "HE" in part:
@@ -408,6 +380,7 @@ for title in grdict:
     c[-1].Draw()
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".png")
     c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".pdf")
+    c[-1].SaveAs(output+title.replace(" ", "_")+"_"+unit+".root")
 
 if dowhat=="wholerun": exit()
 

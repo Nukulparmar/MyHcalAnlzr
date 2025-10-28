@@ -25,6 +25,7 @@ mv WholeRunOutput_${run}/Table*txt  /eos/user/n/nparmar/www/${dir}/
 mv WholeRunOutput_${run}/PedestalTable*txt /eos/user/n/nparmar/www/${dir}
 mv WholeRunOutput_${run}/*.pdf /eos/user/n/nparmar/www/${dir}/byLumi/
 mv WholeRunOutput_${run}/*.png /eos/user/n/nparmar/www/${dir}/byLumi/
+mv WholeRunOutput_${run}/*.root /eos/user/n/nparmar/www/${dir}/byLumi/
 mkdir -p /eos/user/n/nparmar/www/${dir}/histograms/
 mv WholeRunOutput_${run}/*.root /eos/user/n/nparmar/www/${dir}/histograms/
 #mv ${dir}/extrapolations/* /eos/user/n/nparmar/www/plots_archive/PED_plots_2023/extrapolations/
