@@ -58,7 +58,7 @@ process.MyHcalAnlzr = cms.EDAnalyzer('MyHcalAnlzr',
 )
 
 process.TFileService = cms.Service("TFileService",
-      fileName = cms.string("/eos/user/d/dmroy/HCAL/MyHcalAnlzr/output_CosmicsRuns.root"),
+      fileName = cms.string("/eos/user/n/nparmar/HCAL/MyHcalAnlzr/output_CosmicsRuns.root"),
       closeFileFast = cms.untracked.bool(True)
 )
 

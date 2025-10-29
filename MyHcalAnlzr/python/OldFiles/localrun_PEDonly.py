@@ -57,7 +57,7 @@ process.MyHcalAnlzr = cms.EDAnalyzer('MyHcalAnlzr_PEDonly',
 )
 
 process.TFileService = cms.Service("TFileService",
-      fileName = cms.string("/eos/user/d/dmroy/HCAL/MyHcalAnlzr/output_LocalRuns_PEDonly_set4.root"),
+      fileName = cms.string("/eos/user/n/nparmar/HCAL/MyHcalAnlzr/output_LocalRuns_PEDonly_set4.root"),
       closeFileFast = cms.untracked.bool(True)
 )
 
