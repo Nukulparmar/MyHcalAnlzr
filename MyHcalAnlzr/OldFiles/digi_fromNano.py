@@ -8,7 +8,7 @@ from array import array
 floatday = "22.02"; #argv[4]; // e.g. "05.07"
 runid = "363781" #argv[5]; // Integer
 
-f = ROOT.TFile.Open("/eos/user/d/dmroy/HCAL/MyHcalAnlzr_Nano/output_CalibRuns_Nano_Run"+runid+".root", "read")
+f = ROOT.TFile.Open("/eos/user/n/nparmar/HCAL/MyHcalAnlzr_Nano/output_CalibRuns_Nano_Run"+runid+".root", "read")
 qiedigi = f.Get("Events")
 ntot = qiedigi.GetEntries()
 print("Reading in input file, total "+str(ntot)+" Events." )

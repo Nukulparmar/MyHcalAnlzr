@@ -18,7 +18,7 @@ g++ -Wall -g `root-config --glibs --cflags` digi.cc -o macro
 
 Then run:
 ```
-./macro /eos/user/d/dmroy/HCAL/MyHcalAnlzr/output_LocalRuns_set1 LocalOutput_set1
+./macro /eos/user/n/nparmar/HCAL/MyHcalAnlzr/output_LocalRuns_set1 LocalOutput_set1
 ```
 
 Optional: `hadd` the output with previous outputs. Some values are stored in a separate files to make graphs from all previously processed output.

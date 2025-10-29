@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   string runid = argv[5]; // Integer
 
 
-  TFile *f = new TFile(("/eos/user/d/dmroy/HCAL/MyHcalAnlzr/output_LocalRuns_"+kind+"_Run"+runid+".root").c_str(), "read");
+  TFile *f = new TFile(("/eos/user/n/nparmar/HCAL/MyHcalAnlzr/output_LocalRuns_"+kind+"_Run"+runid+".root").c_str(), "read");
   TNtuple* qiedigi = (TNtuple*)f->Get("MyHcalAnlzr/qiedigi");
   int ntot = qiedigi->GetEntries();
   std::cout << "Reading in input file, total " << ntot << " Entries." << std::endl;
