@@ -268,6 +268,94 @@ for title in grdict:
     lowedge = 999
     upedge = 0
 
+    # First, save individual parts as separate PDF files
+    for j,part in enumerate(parts):
+      if gr[part][meanrms] is None: continue
+      
+      # Create individual canvas for this part
+      c_individual = ROOT.TCanvas( 'c_ind_'+part, 'c_ind_'+part, 800, 800 )
+      c_individual.SetLeftMargin(0.12)
+      c_individual.cd()
+      
+      # Set styling for individual plot
+      if "HB" in part or "HE" in part:
+        if "Large" in part: tcolor = ROOT.kBlue
+        if "Small" in part: tcolor = ROOT.kGreen
+      else:
+        tcolor = color
+        
+      if "phi,1," in part:
+        tcolor = tcolor+3
+        marker = 22
+        line = 4
+      elif "phi,36," in part:
+        tcolor = tcolor-5
+        marker = 23
+        line = 5
+      elif "phi,12," in part:
+        tcolor = tcolor-7
+        marker = 20
+        line = 6
+      elif "HBP14RM1" in part:
+        tcolor = tcolor+4
+        marker = 33
+        line = 7
+      elif "HBM09RM3" in part:
+        tcolor = tcolor+4
+        marker = 34
+        line = 8
+      elif "HBM04RM3" in part:
+        tcolor = tcolor+4
+        marker = 35
+        line = 9
+      elif "HBM12RM3" in part:
+        tcolor = tcolor+4
+        marker = 36
+        line = 10
+      elif "HO0" in part:
+        tcolor = tcolor+6
+        marker = 22
+        line = 4
+      elif "HO1" in part:
+        tcolor = tcolor+2
+        marker = 23
+        line = 5
+      elif "HO2" in part:
+        tcolor = tcolor+8
+        marker = 24
+        line = 6
+      else:
+        tcolor = tcolor
+        marker = 21
+        line = 1
+
+      gr[part][meanrms].SetLineColor(tcolor)
+      gr[part][meanrms].SetLineStyle(line)
+      gr[part][meanrms].SetMarkerStyle(marker)
+      gr[part][meanrms].SetMarkerColor(tcolor)
+      
+      gr[part][meanrms].SetTitle(title + " - " + part)
+      gr[part][meanrms].GetXaxis().SetTitle(xtitle)
+      gr[part][meanrms].GetXaxis().SetDecimals()
+      if unit=="ADC":
+        if subdet=="HF": ytitle = "ADC (QIE10)"
+        elif subdet=="HO": ytitle = "ADC (QIE8)"
+        else: ytitle = "ADC (QIE11)"
+      else:
+        ytitle = "Q [fC]"
+      gr[part][meanrms].GetYaxis().SetTitle(ytitle)
+      part_min = ROOT.TMath.MinElement(gr[part][meanrms].GetN(), gr[part][meanrms].GetY())
+      part_max = ROOT.TMath.MaxElement(gr[part][meanrms].GetN(), gr[part][meanrms].GetY())
+      gr[part][meanrms].SetMinimum(part_min - (part_max-part_min)*0.2)
+      gr[part][meanrms].SetMaximum(part_max + (part_max-part_min)*0.3)
+      gr[part][meanrms].Draw("APL")
+      
+      # Save individual plot
+      c_individual.SaveAs(output+title.replace(" ", "_")+"_"+unit+"_"+part.replace(",", "_").replace("/", "_")+".pdf")
+      c_individual.SaveAs(output+title.replace(" ", "_")+"_"+unit+"_"+part.replace(",", "_").replace("/", "_")+".png")
+      del c_individual
+
+    # Now continue with combined plot as before
     for j,part in enumerate(parts):
       if gr[part][meanrms] is None: continue
       if "HB" in part or "HE" in part:
