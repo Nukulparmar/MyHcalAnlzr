@@ -1,3 +1,4 @@
+## This is obsolete - kept for reference only
 days=$1
 lumi=$2
 floatday=$3
@@ -20,7 +21,7 @@ run=$4
 #  sed -i "s/${pedrun}/XXXXXX/g" localrun_singlePed.py
 #fi
 #cd ..
-python3 FindDatasetToRun.py ${floatday} ${run}
+# python3 FindDatasetToRun.py ${floatday} ${run}
 
 
 # Digi step: From nano tuple, make one histogram per channel
@@ -35,4 +36,4 @@ hadd hist_CalibOutput_hadd.root hist_CalibOutputSummary_run*.root
 
 # Make plots: Make trends from values saved in savefile, and get example histograms from rootfile
 source makePlots.sh
-#mv /eos/user/d/dmroy/www/plots_archive/PED_plots/extrapolations/ExtrapolationFC_H* /eos/user/d/dmroy/www/plots_archive/PED_plots/extrapolations_FC/
+#mv /eos/user/n/nparmar/www/plots_archive/PED_plots/extrapolations/ExtrapolationFC_H* /eos/user/n/nparmar/www/plots_archive/PED_plots/extrapolations_FC/
