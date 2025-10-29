@@ -408,7 +408,7 @@ def main():
     
     # Configuration
     blacklist_file = ["244aa98d-1bc6-4c3f-bf02-36032473b104.root"]
-    whitelist_file = []#"3c982479-12d1-407c-8399-67b38c82f709.root"]
+    whitelist_file = ["291a01b8-730d-444b-af6c-521ed89e58d1.root","d24545b5-83f1-4395-af56-06825cea11f0.root"]#"3c982479-12d1-407c-8399-67b38c82f709.root"]
     
     args = parse_arguments()
     # Parse date
