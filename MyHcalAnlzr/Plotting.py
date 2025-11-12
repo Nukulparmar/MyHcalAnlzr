@@ -235,11 +235,7 @@ legend = []
 ##### Draw PED trends
 for title in grdict:
   for unit in ["ADC", "FC"]:
-    c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
-    c[-1].SetLeftMargin(0.12)
-    c[-1].cd()
-    legend.append(ROOT.TLegend(0.12,0.8,0.9,0.9))
-    legend[-1].SetNColumns(2)
+    
     meanrms = grdict[title][0]
     subdet = grdict[title][1]
     parts = [trend for trend in trends if trend.startswith(subdet) and trend.endswith(unit) and "depth" not in trend]
@@ -355,6 +351,12 @@ for title in grdict:
       c_individual.SaveAs(output+title.replace(" ", "_")+"_"+unit+"_"+part.replace(",", "_").replace("/", "_")+".png")
       del c_individual
 
+
+    c.append(ROOT.TCanvas( 'c'+str(len(c)+1), 'c'+str(len(c)+1), 800, 800 ))
+    c[-1].SetLeftMargin(0.12)
+    c[-1].cd()
+    legend.append(ROOT.TLegend(0.12,0.8,0.9,0.9))
+    legend[-1].SetNColumns(2)
     # Now continue with combined plot as before
     for j,part in enumerate(parts):
       if gr[part][meanrms] is None: continue
